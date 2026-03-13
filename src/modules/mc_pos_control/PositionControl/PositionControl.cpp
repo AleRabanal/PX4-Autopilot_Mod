@@ -206,40 +206,43 @@ void PositionControl::_velocityControl(const float dt)
 
 void PositionControl::_accelerationControl()
 {
-	/*
-	// Assume standard acceleration due to gravity in vertical direction for attitude generation
-	float z_specific_force = -CONSTANTS_ONE_G;
+	if(_omni_mode){
 
-	if (!_decouple_horizontal_and_vertical_acceleration) {
-		// Include vertical acceleration setpoint for better horizontal acceleration tracking
-		z_specific_force += _acc_sp(2);
-	}
+		// Omnidirectional thrust: directly convert acceleration setpoint to thrust
 
-	Vector3f body_z = Vector3f(-_acc_sp(0), -_acc_sp(1), -z_specific_force).normalized();
-	ControlMath::limitTilt(body_z, Vector3f(0, 0, 1), _lim_tilt);
-	// Convert to thrust assuming hover thrust produces standard gravity
-	const float thrust_ned_z = _acc_sp(2) * (_hover_thrust / CONSTANTS_ONE_G) - _hover_thrust;
-	// Project thrust to planned body attitude
-	const float cos_ned_body = (Vector3f(0, 0, 1).dot(body_z));
-	const float collective_thrust = math::min(thrust_ned_z / cos_ned_body, -_lim_thr_min);
-	_thr_sp = body_z * collective_thrust;
-	*/
+		_thr_sp(0) = _acc_sp(0) * (_hover_thrust / CONSTANTS_ONE_G);
+		_thr_sp(1) = _acc_sp(1) * (_hover_thrust / CONSTANTS_ONE_G);
+		_thr_sp(2) = _acc_sp(2) * (_hover_thrust / CONSTANTS_ONE_G) - _hover_thrust;
+
+		// limit thrust magnitude
+		if (_thr_sp.norm() > _lim_thr_max) {
+			_thr_sp = _thr_sp.normalized() * _lim_thr_max;
+		}
+
+		// avoid zero thrust
+		if (_thr_sp.norm() < _lim_thr_min) {
+			_thr_sp = _thr_sp.normalized() * _lim_thr_min;
+		}
+
+	} else{
 
 
-	// Omnidirectional thrust: directly convert acceleration setpoint to thrust
+		// Assume standard acceleration due to gravity in vertical direction for attitude generation
+		float z_specific_force = -CONSTANTS_ONE_G;
 
-	_thr_sp(0) = _acc_sp(0) * (_hover_thrust / CONSTANTS_ONE_G);
-	_thr_sp(1) = _acc_sp(1) * (_hover_thrust / CONSTANTS_ONE_G);
-	_thr_sp(2) = _acc_sp(2) * (_hover_thrust / CONSTANTS_ONE_G) - _hover_thrust;
+		if (!_decouple_horizontal_and_vertical_acceleration) {
+			// Include vertical acceleration setpoint for better horizontal acceleration tracking
+			z_specific_force += _acc_sp(2);
+		}
 
-	// limit thrust magnitude
-	if (_thr_sp.norm() > _lim_thr_max) {
-		_thr_sp = _thr_sp.normalized() * _lim_thr_max;
-	}
-
-	// avoid zero thrust
-	if (_thr_sp.norm() < _lim_thr_min) {
-		_thr_sp = _thr_sp.normalized() * _lim_thr_min;
+		Vector3f body_z = Vector3f(-_acc_sp(0), -_acc_sp(1), -z_specific_force).normalized();
+		ControlMath::limitTilt(body_z, Vector3f(0, 0, 1), _lim_tilt);
+		// Convert to thrust assuming hover thrust produces standard gravity
+		const float thrust_ned_z = _acc_sp(2) * (_hover_thrust / CONSTANTS_ONE_G) - _hover_thrust;
+		// Project thrust to planned body attitude
+		const float cos_ned_body = (Vector3f(0, 0, 1).dot(body_z));
+		const float collective_thrust = math::min(thrust_ned_z / cos_ned_body, -_lim_thr_min);
+		_thr_sp = body_z * collective_thrust;
 	}
 
 }
@@ -288,23 +291,23 @@ void PositionControl::getLocalPositionSetpoint(vehicle_local_position_setpoint_s
 
 void PositionControl::getAttitudeSetpoint(vehicle_attitude_setpoint_s &attitude_setpoint) const
 {
-	//ControlMath::thrustToAttitude(_thr_sp, _yaw_sp, attitude_setpoint);
-	//attitude_setpoint.yaw_sp_move_rate = _yawspeed_sp;
+	if(_omni_mode){
+		//Omni: no tilt
+		// mantener roll y pitch en cero
+		matrix::Quatf q_sp = matrix::Quatf(matrix::Eulerf(0.f, 0.f, _yaw_sp));
 
-	attitude_setpoint = {};
+		attitude_setpoint.q_d[0] = q_sp(0);
+		attitude_setpoint.q_d[1] = q_sp(1);
+		attitude_setpoint.q_d[2] = q_sp(2);
+		attitude_setpoint.q_d[3] = q_sp(3);
 
-	// mantener roll y pitch en cero
-	matrix::Quatf q_sp = matrix::Quatf(matrix::Eulerf(0.f, 0.f, _yaw_sp));
-
-	attitude_setpoint.q_d[0] = q_sp(0);
-	attitude_setpoint.q_d[1] = q_sp(1);
-	attitude_setpoint.q_d[2] = q_sp(2);
-	attitude_setpoint.q_d[3] = q_sp(3);
-
-	// usar thrust directamente
-	attitude_setpoint.thrust_body[0] = _thr_sp(0);
-	attitude_setpoint.thrust_body[1] = _thr_sp(1);
-	attitude_setpoint.thrust_body[2] = _thr_sp(2);
-
-	attitude_setpoint.yaw_sp_move_rate = _yawspeed_sp;
+		// usar thrust directamente
+		attitude_setpoint.thrust_body[0] = _thr_sp(0);
+		attitude_setpoint.thrust_body[1] = _thr_sp(1);
+		attitude_setpoint.thrust_body[2] = _thr_sp(2);
+	} else{
+		//normal PX4
+		ControlMath::thrustToAttitude(_thr_sp, _yaw_sp, attitude_setpoint);
 	}
+	attitude_setpoint.yaw_sp_move_rate = _yawspeed_sp;
+}
