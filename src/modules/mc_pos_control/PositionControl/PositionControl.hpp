@@ -190,6 +190,9 @@ public:
 	 */
 	static const trajectory_setpoint_s empty_trajectory_setpoint;
 
+	//Custo, omni mod
+	void setOmniMode(bool omni) { _omni_mode = omni; }
+
 private:
 	// The range limits of the hover thrust configuration/estimate
 	static constexpr float HOVER_THRUST_MIN = 0.05f;
@@ -233,4 +236,7 @@ private:
 	matrix::Vector3f _thr_sp; /**< desired thrust */
 	float _yaw_sp{}; /**< desired heading */
 	float _yawspeed_sp{}; /** desired yaw-speed */
+
+	bool _omni_mode{false}; /**< enable omnidirectional control */
+
 };
