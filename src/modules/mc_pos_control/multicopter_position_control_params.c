@@ -119,3 +119,15 @@ PARAM_DEFINE_FLOAT(MPC_VEL_NF_BW, 5.0f);
  * @group Multicopter Position Control
  */
 PARAM_DEFINE_FLOAT(MPC_VELD_LP, 5.0f);
+
+/**
+ * Omnicopter mode
+ *
+ * 0: normal multicopter (tilt based motion)
+ * 1: omnidirectional thrust (no tilt)
+ *
+ * @min 0
+ * @max 1
+ * @group Multicopter Position Control
+ */
+PARAM_DEFINE_INT32(MPC_OMNI_MODE, 0);
