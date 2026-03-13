@@ -193,7 +193,7 @@ private:
 		(ParamFloat<px4::params::MPC_YAWRAUTO_ACC>) _param_mpc_yawrauto_acc,
 
 		//Mode Omni/mc
-		(ParamInt<px4::params::MPC_OMNI_MODE>) _param_mc_omni_mode
+		(ParamInt<px4::params::MPC_OMNI_MODE>) _param_mpc_omni_mode
 
 	);
 
