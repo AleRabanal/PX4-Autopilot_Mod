@@ -301,10 +301,16 @@ void PositionControl::getAttitudeSetpoint(vehicle_attitude_setpoint_s &attitude_
 		attitude_setpoint.q_d[2] = q_sp(2);
 		attitude_setpoint.q_d[3] = q_sp(3);
 
-		// usar thrust directamente
-		attitude_setpoint.thrust_body[0] = _thr_sp(0);
-		attitude_setpoint.thrust_body[1] = _thr_sp(1);
-		attitude_setpoint.thrust_body[2] = _thr_sp(2);
+
+		// convertir thrust de world frame a body frame
+		matrix::Dcmf R_sp(q_sp);
+
+		matrix::Vector3f thrust_world = _thr_sp;
+		matrix::Vector3f thrust_body = R_sp.transpose() * thrust_world;
+
+		attitude_setpoint.thrust_body[0] = thrust_body(0);
+		attitude_setpoint.thrust_body[1] = thrust_body(1);
+		attitude_setpoint.thrust_body[2] = thrust_body(2);
 	} else{
 		//normal PX4
 		ControlMath::thrustToAttitude(_thr_sp, _yaw_sp, attitude_setpoint);
