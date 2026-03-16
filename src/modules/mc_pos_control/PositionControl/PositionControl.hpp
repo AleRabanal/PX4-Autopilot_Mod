@@ -42,6 +42,7 @@
 #include <lib/mathlib/mathlib.h>
 #include <matrix/matrix/math.hpp>
 #include <uORB/topics/trajectory_setpoint.h>
+#include <uORB/Subscription.hpp>
 #include <uORB/topics/vehicle_attitude_setpoint.h>
 #include <uORB/topics/vehicle_local_position_setpoint.h>
 
@@ -192,6 +193,10 @@ public:
 
 	//Custo, omni mod
 	void setOmniMode(bool omni) { _omni_mode = omni; }
+	void setAttitudeSetPoints(float roll,float pitch){
+	        _roll_sp  = roll;
+        	_pitch_sp = pitch;
+	}
 
 private:
 	// The range limits of the hover thrust configuration/estimate
@@ -236,6 +241,9 @@ private:
 	matrix::Vector3f _thr_sp; /**< desired thrust */
 	float _yaw_sp{}; /**< desired heading */
 	float _yawspeed_sp{}; /** desired yaw-speed */
+	//uORB::Subscription _att_sp_sub{ORB_ID(vehicle_attitude_setpoint)};
+	float _roll_sp{0.f};
+	float _pitch_sp{0.f};
 
 	bool _omni_mode{false}; /**< enable omnidirectional control */
 

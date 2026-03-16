@@ -294,7 +294,7 @@ void PositionControl::getAttitudeSetpoint(vehicle_attitude_setpoint_s &attitude_
 	if(_omni_mode){
 		//Omni: no tilt
 		// mantener roll y pitch en cero
-		matrix::Quatf q_sp = matrix::Quatf(matrix::Eulerf(0.f, 0.f, _yaw_sp));
+		matrix::Quatf q_sp = matrix::Quatf(matrix::Eulerf(_roll_sp, _pitch_sp, _yaw_sp));
 
 		attitude_setpoint.q_d[0] = q_sp(0);
 		attitude_setpoint.q_d[1] = q_sp(1);
