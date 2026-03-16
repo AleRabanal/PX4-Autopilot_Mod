@@ -527,8 +527,12 @@ void MulticopterPositionControl::Run()
 			// limit tilt during takeoff ramupup
 			const float tilt_limit_deg = (_takeoff.getTakeoffState() < TakeoffState::flight)
 						     ? _param_mpc_tiltmax_lnd.get() : _param_mpc_tiltmax_air.get();
-			_control.setTiltLimit(_tilt_limit_slew_rate.update(math::radians(tilt_limit_deg), dt));
-
+			//_control.setTiltLimit(_tilt_limit_slew_rate.update(math::radians(tilt_limit_deg), dt));
+			if (_param_mpc_omni_mode.get() > 0) {
+				_control.setTiltLimit(math::radians(180.0f));
+			} else {
+				_control.setTiltLimit(_tilt_limit_slew_rate.update(math::radians(tilt_limit_deg), dt));
+			}
 			const float speed_up = _takeoff.updateRamp(dt,
 					       PX4_ISFINITE(_vehicle_constraints.speed_up) ? _vehicle_constraints.speed_up : _param_mpc_z_vel_max_up.get());
 			const float speed_down = PX4_ISFINITE(_vehicle_constraints.speed_down) ? _vehicle_constraints.speed_down :
@@ -550,6 +554,21 @@ void MulticopterPositionControl::Run()
 				math::max(speed_down, 0.f));
 
 			_control.setInputSetpoint(_setpoint);
+
+			// ---- OMNI: leer actitud externa de ROS -------------------------
+			if (_param_mpc_omni_mode.get() > 0) {
+				vehicle_attitude_setpoint_s ext_att_sp;
+				if (_external_att_sp_sub.update(&ext_att_sp)) {
+					matrix::Quatf  q(ext_att_sp.q_d);
+					matrix::Eulerf e(q);
+					_ext_roll_sp  = e.phi();
+					_ext_pitch_sp = e.theta();
+					_ext_yaw_sp   = e.psi();
+				}
+				_control.setAttitudeSetPoints(_ext_roll_sp, _ext_pitch_sp);
+				_setpoint.yaw = _ext_yaw_sp;   // yaw acumulado de ROS
+			}
+			// ----------------------------------------------------------------
 
 			// update states
 			if (!PX4_ISFINITE(_setpoint.position[2])

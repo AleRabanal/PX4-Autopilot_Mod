@@ -111,6 +111,13 @@ private:
 	uORB::Subscription _vehicle_control_mode_sub{ORB_ID(vehicle_control_mode)};
 	uORB::Subscription _vehicle_land_detected_sub{ORB_ID(vehicle_land_detected)};
 
+	//Externa attitude (ROS2)
+	uORB::Subscription _external_att_sp_sub{ORB_ID(vehicle_attitude_setpoint)};
+
+    	float _ext_roll_sp{0.f};   // roll setpoint llegado de ROS
+    	float _ext_pitch_sp{0.f};  // pitch setpoint llegado de ROS
+    	float _ext_yaw_sp{0.f};    // yaw setpoint llegado de ROS
+
 	hrt_abstime _time_stamp_last_loop{0};		/**< time stamp of last loop iteration */
 	hrt_abstime _time_position_control_enabled{0};
 
