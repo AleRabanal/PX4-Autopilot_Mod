@@ -142,8 +142,14 @@ void PositionControl::_positionControl()
 
 void PositionControl::_velocityControl(const float dt)
 {
-	// Constrain vertical velocity integral
-	_vel_int(2) = math::constrain(_vel_int(2), -CONSTANTS_ONE_G, CONSTANTS_ONE_G);
+	if (_omni_mode) {
+		_vel_int(0) = math::constrain(_vel_int(0), -6.f, 6.f);
+		_vel_int(1) = math::constrain(_vel_int(1), -6.f, 6.f);
+		_vel_int(2) = math::constrain(_vel_int(2), -6.f, 6.f);
+	} else {
+		// Constrain vertical velocity integral
+		_vel_int(2) = math::constrain(_vel_int(2), -CONSTANTS_ONE_G, CONSTANTS_ONE_G);
+	}
 
 	// PID velocity control
 	Vector3f vel_error = _vel_sp - _vel;
@@ -214,14 +220,22 @@ void PositionControl::_accelerationControl()
 		_thr_sp(1) = _acc_sp(1) * (_hover_thrust / CONSTANTS_ONE_G);
 		_thr_sp(2) = _acc_sp(2) * (_hover_thrust / CONSTANTS_ONE_G) - _hover_thrust;
 
-		// limit thrust magnitude
+
+		// Limitar magnitud máxima
 		if (_thr_sp.norm() > _lim_thr_max) {
 			_thr_sp = _thr_sp.normalized() * _lim_thr_max;
 		}
 
-		// avoid zero thrust
+		// Evitar thrust cero — solo aplicar si el vector tiene dirección definida
+		// Si la norma es demasiado pequeña para normalizar, forzar solo el eje Z (hover)
 		if (_thr_sp.norm() < _lim_thr_min) {
-			_thr_sp = _thr_sp.normalized() * _lim_thr_min;
+			if (_thr_sp.norm() > 1e-4f) {
+				// Vector con dirección válida, escalar manteniendo dirección
+				_thr_sp = _thr_sp.normalized() * _lim_thr_min;
+			} else {
+				// Vector casi nulo — forzar thrust mínimo en Z (hover seguro)
+				_thr_sp = matrix::Vector3f(0.f, 0.f, -_lim_thr_min);
+			}
 		}
 
 	} else{
@@ -302,11 +316,11 @@ void PositionControl::getAttitudeSetpoint(vehicle_attitude_setpoint_s &attitude_
 		attitude_setpoint.q_d[3] = q_sp(3);
 
 
-		// convertir thrust de world frame a body frame
-		matrix::Dcmf R_sp(q_sp);
+		// convertir thrust de world frame a body frame con la actitud actual NO desdeada
+		matrix::Dcmf R_current(_q_current);
 
-		matrix::Vector3f thrust_world = _thr_sp;
-		matrix::Vector3f thrust_body = R_sp.transpose() * thrust_world;
+		//matrix::Vector3f thrust_world = _thr_sp;
+		matrix::Vector3f thrust_body = R_current.transpose() * _thr_sp;
 
 		attitude_setpoint.thrust_body[0] = thrust_body(0);
 		attitude_setpoint.thrust_body[1] = thrust_body(1);

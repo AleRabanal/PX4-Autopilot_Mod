@@ -197,6 +197,7 @@ public:
 	        _roll_sp  = roll;
         	_pitch_sp = pitch;
 	}
+	void setCurrentAttitude(const matrix::Quatf &q){_q_current = q;}
 
 private:
 	// The range limits of the hover thrust configuration/estimate
@@ -244,6 +245,9 @@ private:
 	//uORB::Subscription _att_sp_sub{ORB_ID(vehicle_attitude_setpoint)};
 	float _roll_sp{0.f};
 	float _pitch_sp{0.f};
+
+	matrix::Quatf _q_current{1.f,0.f,0.f,0.f}; //actitud actual del EKF
+
 
 	bool _omni_mode{false}; /**< enable omnidirectional control */
 
