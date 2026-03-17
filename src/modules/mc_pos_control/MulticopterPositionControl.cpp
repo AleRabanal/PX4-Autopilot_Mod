@@ -590,6 +590,11 @@ void MulticopterPositionControl::Run()
 				_control.resetIntegralXY();
 			}
 
+			vehicle_attitude_s vehicle_att{}; //Pasar actitud actual al controlador
+			if (_vehicle_attitude_sub.copy(&vehicle_att)) {
+				_control.setCurrentAttitude(matrix::Quatf(vehicle_att.q));
+			}
+
 			_control.setState(states);
 
 			const hrt_abstime now = hrt_absolute_time();
