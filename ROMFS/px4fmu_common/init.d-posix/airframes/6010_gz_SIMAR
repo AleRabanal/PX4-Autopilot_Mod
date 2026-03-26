@@ -25,53 +25,70 @@ param set-default CA_R_REV 0
 # GEOMETRÍA CORREGIDA PARA DJI F550 (Hexa X)
 # =========================================================
 
+param set-default MPC_ACC_HOR 3.0
+
+param set-default MPC_XY_VEL_MAX 5.0
+param set-default MPC_XY_CRUISE 3.0
+
+param set-default MPC_XY_VEL_P_ACC 2.0
+param set-default MPC_XY_VEL_D_ACC 0.3
+
+param set-default MPC_XY_P 0.95
+
+param set-default MPC_JERK_MAX 5.0
+param set-default MPC_JERK_AUTO 3.0
+
+
+
+param set-default MPC_OMNI_MODE 1
+
 param set-default CA_ROTOR0_PX 0.0
 param set-default CA_ROTOR0_PY 0.275
 param set-default CA_ROTOR0_PZ 0.0
 param set-default CA_ROTOR0_KM -0.05
-#param set-default CA_ROTOR0_AX 0
-#param set-default CA_ROTOR0_AY 0
-#param set-default CA_ROTOR0_AZ -1.0
+param set-default CA_ROTOR0_AX 0.321
+param set-default CA_ROTOR0_AY 0.342
+param set-default CA_ROTOR0_AZ -0.883
 
 param set-default CA_ROTOR1_PX 0.0
 param set-default CA_ROTOR1_PY -0.275
 param set-default CA_ROTOR1_PZ 0.0
 param set-default CA_ROTOR1_KM 0.05
-#param set-default CA_ROTOR1_AX 0
-#param set-default CA_ROTOR1_AY 0
-#param set-default CA_ROTOR1_AZ -1.0
+param set-default CA_ROTOR1_AX 0.321
+param set-default CA_ROTOR1_AY 0.342
+param set-default CA_ROTOR1_AZ -0.883
 
 param set-default CA_ROTOR2_PX 0.238
 param set-default CA_ROTOR2_PY -0.1375
 param set-default CA_ROTOR2_PZ 0.0
 param set-default CA_ROTOR2_KM -0.05
-#param set-default CA_ROTOR2_AX 0
-#param set-default CA_ROTOR2_AY 0
-#param set-default CA_ROTOR2_AZ -1.0
+param set-default CA_ROTOR2_AX 0.136
+param set-default CA_ROTOR2_AY -0.449
+param set-default CA_ROTOR2_AZ -0.883
 
 param set-default CA_ROTOR3_PX -0.238
 param set-default CA_ROTOR3_PY 0.1375
 param set-default CA_ROTOR3_PZ 0.0
 param set-default CA_ROTOR3_KM 0.05
-#param set-default CA_ROTOR3_AX 0
-#param set-default CA_ROTOR3_AY 0
-#param set-default CA_ROTOR3_AZ -1.0
+param set-default CA_ROTOR3_AX 0.136
+param set-default CA_ROTOR3_AY -0.449
+param set-default CA_ROTOR3_AZ -0.883
 
 param set-default CA_ROTOR4_PX 0.238
 param set-default CA_ROTOR4_PY 0.1375
 param set-default CA_ROTOR4_PZ 0.0
 param set-default CA_ROTOR4_KM 0.05
-#param set-default CA_ROTOR4_AX 0
-#param set-default CA_ROTOR4_AY 0
-#param set-default CA_ROTOR4_AZ -1.0
+param set-default CA_ROTOR4_AX -0.457
+param set-default CA_ROTOR4_AY 0.107
+param set-default CA_ROTOR4_AZ -0.883
 
 param set-default CA_ROTOR5_PX -0.238
 param set-default CA_ROTOR5_PY -0.1375
 param set-default CA_ROTOR5_PZ 0.0
 param set-default CA_ROTOR5_KM -0.05
-#param set-default CA_ROTOR5_AX 0
-#param set-default CA_ROTOR5_AY 0
-#param set-default CA_ROTOR5_AZ -1.0
+param set-default CA_ROTOR5_AX -0.457
+param set-default CA_ROTOR5_AY 0.107
+param set-default CA_ROTOR5_AZ -0.883
 
 
 param set-default SIM_GZ_EN 1
@@ -100,4 +117,4 @@ param set-default SIM_GZ_EC_MAX6 1100
 
 
 # disable MC desaturation which improves attitude tracking
-#param set-default CA_METHOD 0
+param set-default CA_METHOD 0
