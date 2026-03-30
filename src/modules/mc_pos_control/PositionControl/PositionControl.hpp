@@ -249,6 +249,6 @@ private:
 	matrix::Quatf _q_current{1.f,0.f,0.f,0.f}; //actitud actual del EKF
 
 
-	bool _omni_mode{false}; /**< enable omnidirectional control */
+	bool _omni_mode{true}; /**< enable omnidirectional control */
 
 };

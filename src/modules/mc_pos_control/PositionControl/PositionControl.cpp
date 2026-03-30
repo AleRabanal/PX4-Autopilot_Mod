@@ -317,11 +317,11 @@ void PositionControl::getAttitudeSetpoint(vehicle_attitude_setpoint_s &attitude_
 
 
 		// convertir thrust de world frame a body frame con la actitud actual NO desdeada
-		//matrix::Dcmf R_current(_q_current);
-		matrix::Dcmf R_sp(q_sp);
+		matrix::Dcmf R_current(_q_current);
+		//matrix::Dcmf R_sp(q_sp);
 
 		//matrix::Vector3f thrust_world = _thr_sp;
-		matrix::Vector3f thrust_body = R_sp.transpose() * _thr_sp;
+		matrix::Vector3f thrust_body = R_current.transpose() * _thr_sp;
 
 		attitude_setpoint.thrust_body[0] = thrust_body(0);
 		attitude_setpoint.thrust_body[1] = thrust_body(1);
