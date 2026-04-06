@@ -15,6 +15,9 @@ param set-default CA_AIRFRAME 0
 
 param set-default SYS_AUTOSTART 6010
 
+
+param set-default MPC_OMNI_MODE 1
+
 # Configuramos que tiene 6 rotores y geometría en X
 # Número de rotores
 param set-default CA_ROTOR_COUNT 6
@@ -38,14 +41,13 @@ param set-default MPC_XY_P 0.95
 param set-default MPC_JERK_MAX 6.0
 param set-default MPC_JERK_AUTO 10.0
 
-param set-default MPC_YAWRAUTO_ACC 5.0
-param set-default MPC_YAWRAUTO_MAX 40
-param set-default MC_YAW_P 2.4
-param set-default MC_YAW_WEIGHT 0.3
+param set-default MC_YAWRATE_P 0.05
+param set-default MPC_YAWRAUTO_ACC 20.0
+param set-default MPC_YAWRAUTO_MAX 60.0
+param set-default MC_YAW_P 0.8
+param set-default MC_YAW_WEIGHT 0.4
 
 
-
-param set-default MPC_OMNI_MODE 0
 
 param set-default CA_ROTOR0_PX 0.0
 param set-default CA_ROTOR0_PY 0.275
