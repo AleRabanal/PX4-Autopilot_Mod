@@ -91,7 +91,7 @@ px4_add_romfs_files(
 
 	6009_gz_DJIF550 #fram F550 of DJI
 	6010_gz_SIMAR #new model SITL SIMAR
-
+	6011_gz_HexaCopterTilting #new model hexacopter with tilting motors
 	6011_gazebo-classic_typhoon_h480
 	6011_gazebo-classic_typhoon_h480.post
 
