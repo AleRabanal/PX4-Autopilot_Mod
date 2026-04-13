@@ -16,7 +16,7 @@ param set-default CA_AIRFRAME 0
 param set-default SYS_AUTOSTART 6010
 
 
-param set-default MPC_OMNI_MODE 1
+param set-default MPC_OMNI_MODE 0
 
 # Configuramos que tiene 6 rotores y geometría en X
 # Número de rotores

@@ -33,6 +33,7 @@ parameters:
                 13: Rover (Mecanum)
                 14: Spacecraft 2D
                 15: Spacecraft 3D
+                16: Hexacopter Tilting
             default: 0
 
         CA_METHOD:
@@ -1296,3 +1297,23 @@ mixer:
                             function: 'axisz'
                           - name: 'CA_ROTOR${i}_CT'
                             label: "Thrust\nCoefficient"
+
+
+            16: # Hexacopter with Tilt (Voliro)
+
+                actuators:
+                  - actuator_type: 'motor'
+                    group_label: 'Motors'
+                    count: 'CA_ROTOR_COUNT'
+                    per_item_parameters:
+                        standard:
+                            position: [ 'CA_ROTOR${i}_PX', 'CA_ROTOR${i}_PY', 'CA_ROTOR${i}_PZ' ]
+                        extra:
+                          - name: 'CA_ROTOR${i}_KM'
+                            label: 'Moment Coefficient'
+                  - actuator_type: 'servo'
+                    group_label: 'Servos'
+                    count: 'CA_ROTOR_COUNT'      # <-- Usa el contador de servos genéricos (hasta 8)
+                    item_label_prefix: 'Servo ${i}'
+                    # Como son servos normales, no necesitas meterle los parámetros extra de "Angle at Min Tilt" si lo resuelves en tu código.
+

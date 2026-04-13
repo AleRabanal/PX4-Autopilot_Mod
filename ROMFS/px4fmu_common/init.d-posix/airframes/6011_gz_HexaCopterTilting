@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# @name SIMAR Gazebo
+# @name HexaCopterTilting Gazebo
 # @type Hexarotor x
 # @class Copter
 #
@@ -9,13 +9,13 @@
 
 PX4_SIMULATOR=${PX4_SIMULATOR:=gz}
 PX4_GZ_WORLD=${PX4_GZ_WORLD:=default}
-PX4_SIM_MODEL=${PX4_SIM_MODEL:=SIMAR}
+PX4_SIM_MODEL=${PX4_SIM_MODEL:=HexaCopterTilting}
 
-# ❗ IMPORTANTE: sin control allocation de PX4 (usarás el tuyo)
-param set-default CA_AIRFRAME 0
+# IMPORTANTE: sin control allocation de PX4 (usarás el tuyo)
+param set-default CA_AIRFRAME 16
 
 param set-default SYS_AUTOSTART 6011
-param set-default MPC_OMNI_MODE 0
+param set-default MPC_OMNI_MODE 1
 
 # =========================================================
 # CONFIGURACIÓN DE CONTROL (puedes ajustarlo luego)
