@@ -6,6 +6,8 @@
 
 #include "control_allocation/actuator_effectiveness/ActuatorEffectiveness.hpp"
 #include <px4_platform_common/module_params.h>
+#include <uORB/Subscription.hpp>
+#include <uORB/topics/vehicle_status.h>
 
 class ActuatorEffectivenessHexaTilting : public ModuleParams, public ActuatorEffectiveness
 {
@@ -34,25 +36,25 @@ public:
     const char *name() const override { return "HexaTilting"; }
 
 private:
+    uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
     void updateParams() override;
+    uint32_t _armed_cycles{0};
 
-    // Estructura para guardar los handles de los parámetros de PX4
     struct ParamHandles {
         param_t position_x;
         param_t position_y;
-        param_t moment_ratio; // Contiene tanto el valor 'km' como la dirección de giro
+        param_t moment_ratio;
     };
 
     ParamHandles _param_handles[NUM_ROTORS_MAX];
 
-    // Estructura local para guardar la geometría actualzada
     struct RotorGeometry {
         float x;
         float y;
         float km;
     };
 
-    float _angulo_acumulado[6]{0.0f}; // Para llevar la cuenta del ángulo de cada rotor
+    float _angulo_acumulado[6]{0.0f};
 
     RotorGeometry _geometry[NUM_ROTORS_MAX];
 

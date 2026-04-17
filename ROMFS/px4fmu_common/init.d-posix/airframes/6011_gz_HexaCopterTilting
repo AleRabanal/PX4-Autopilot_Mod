@@ -96,18 +96,18 @@ param set-default SIM_GZ_SV_FUNC5 205
 param set-default SIM_GZ_SV_FUNC6 206
 
 # Límites de ángulo (puedes ajustar luego)
-param set-default SIM_GZ_SV_MINA1 -360
-param set-default SIM_GZ_SV_MAXA1 360
-param set-default SIM_GZ_SV_MINA2 -360
-param set-default SIM_GZ_SV_MAXA2 360
-param set-default SIM_GZ_SV_MINA3 -360
-param set-default SIM_GZ_SV_MAXA3 360
-param set-default SIM_GZ_SV_MINA4 -360
-param set-default SIM_GZ_SV_MAXA4 360
-param set-default SIM_GZ_SV_MINA5 -360
-param set-default SIM_GZ_SV_MAXA5 360
-param set-default SIM_GZ_SV_MINA6 -360
-param set-default SIM_GZ_SV_MAXA6 360
+param set-default SIM_GZ_SV_MINA1 -1080
+param set-default SIM_GZ_SV_MAXA1 1080
+param set-default SIM_GZ_SV_MINA2 -1080
+param set-default SIM_GZ_SV_MAXA2 1080
+param set-default SIM_GZ_SV_MINA3 -1080
+param set-default SIM_GZ_SV_MAXA3 1080
+param set-default SIM_GZ_SV_MINA4 -1080
+param set-default SIM_GZ_SV_MAXA4 1080
+param set-default SIM_GZ_SV_MINA5 -1080
+param set-default SIM_GZ_SV_MAXA5 1080
+param set-default SIM_GZ_SV_MINA6 -1080
+param set-default SIM_GZ_SV_MAXA6 1080
 
 # =========================================================
 # OTROS

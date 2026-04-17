@@ -214,6 +214,11 @@ void PositionControl::_accelerationControl()
 {
 	if(_omni_mode){
 
+		if (_acc_sp.norm() < 0.1f) {
+			_thr_sp = matrix::Vector3f(0.f, 0.f, -_lim_thr_min);
+			return;
+		}
+
 		// Omnidirectional thrust: directly convert acceleration setpoint to thrust
 
 		_thr_sp(0) = _acc_sp(0) * (_hover_thrust / CONSTANTS_ONE_G);
