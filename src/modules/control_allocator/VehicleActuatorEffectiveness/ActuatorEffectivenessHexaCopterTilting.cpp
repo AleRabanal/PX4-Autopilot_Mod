@@ -153,6 +153,11 @@ void ActuatorEffectivenessHexaTilting::updateSetpoint(
         modo_vuelo = true;
         PX4_INFO(">>> TRANSICION A MODO VUELO ACTIVADA <<<");
     }
+    // NUEVO: Apagar el modo vuelo al aterrizar (cuando el throttle baja al ralentí)
+    else if (modo_vuelo && throttle < 0.08f) {
+        modo_vuelo = false;
+        PX4_INFO(">>> TRANSICION A MODO SUELO (ATERRIZAJE) <<<");
+    }
 
     // ==========================================
     // 4. LÓGICA DE CONTROL
@@ -166,11 +171,9 @@ void ActuatorEffectivenessHexaTilting::updateSetpoint(
 
         if (!modo_vuelo) {
             // MODO SUELO: Bloqueado en ralentí.
-            // Los motores a 5% y los servos a 0.
             motor_thrust = 0.05f;
-            desired_rad  = 0.0f;
+            desired_rad  = 0.0f; // Fuerza a los motores a mirar hacia arriba
 
-            // Forzamos a cero lo que viene del mezclador para mantenerlo limpio
             actuator_sp(i) = 0.0f;
             actuator_sp(i + 6) = 0.0f;
         } else {
@@ -184,10 +187,11 @@ void ActuatorEffectivenessHexaTilting::updateSetpoint(
             } else {
                 motor_thrust = sqrtf(F_vi * F_vi + F_li * F_li);
 
-                // Un mínimo de 5% para que no se calen en el aire
                 if (motor_thrust < 0.05f) motor_thrust = 0.05f;
 
-                if (motor_thrust > 0.01f) {
+                // AJUSTE: Subimos este umbral de 0.01 a 0.05.
+                // Evita que "ruido" pequeño en el suelo haga que los motores bailen.
+                if (motor_thrust > 0.05f) {
                     desired_rad = atan2f(F_li, F_vi);
                 } else {
                     desired_rad = _angulo_acumulado[i];
@@ -198,7 +202,6 @@ void ActuatorEffectivenessHexaTilting::updateSetpoint(
         // ==========================================
         // 5. MOVIMIENTO SUAVE DE SERVOS Y SALIDA
         // ==========================================
-        // El suavizado de los servos sí lo mantenemos para que no rompan
         float error = desired_rad - _angulo_acumulado[i];
         while (error >  M_PI_F) error -= 2.0f * M_PI_F;
         while (error < -M_PI_F) error += 2.0f * M_PI_F;
@@ -206,7 +209,6 @@ void ActuatorEffectivenessHexaTilting::updateSetpoint(
         error = math::constrain(error, -max_step, max_step);
         _angulo_acumulado[i] += error;
 
-        // Asignación final directa (sin rampas para el thrust)
         actuator_sp(i)     = math::constrain(motor_thrust, 0.0f, 1.0f);
         actuator_sp(i + 6) = math::constrain(_angulo_acumulado[i] / max_angle, -1.0f, 1.0f);
     }
