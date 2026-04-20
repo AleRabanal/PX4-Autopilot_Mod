@@ -199,6 +199,11 @@ public:
 	}
 	void setCurrentAttitude(const matrix::Quatf &q){_q_current = q;}
 
+
+	void setAttitudeQuaternion(const matrix::Quatf &q) { _q_sp = q; }
+
+
+
 private:
 	// The range limits of the hover thrust configuration/estimate
 	static constexpr float HOVER_THRUST_MIN = 0.05f;
@@ -250,5 +255,8 @@ private:
 
 
 	bool _omni_mode{true}; /**< enable omnidirectional control */
+
+	matrix::Quatf _q_sp; // Añade esta variable privada
+
 
 };

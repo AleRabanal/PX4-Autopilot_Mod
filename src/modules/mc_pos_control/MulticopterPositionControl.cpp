@@ -559,13 +559,11 @@ void MulticopterPositionControl::Run()
 			if (_param_mpc_omni_mode.get() > 0) {
 				vehicle_attitude_setpoint_s ext_att_sp;
 				if (_external_att_sp_sub.update(&ext_att_sp)) {
-					matrix::Quatf  q(ext_att_sp.q_d);
-					matrix::Eulerf e(q);
-					_ext_roll_sp  = e.phi();
-					_ext_pitch_sp = e.theta();
-					_ext_yaw_sp   = e.psi();
+					matrix::Quatf  q_offboard(ext_att_sp.q_d);
+					_control.setAttitudeQuaternion(q_offboard);
+
 				}
-				_control.setAttitudeSetPoints(_ext_roll_sp, _ext_pitch_sp);
+				//_control.setAttitudeSetPoints(_ext_roll_sp, _ext_pitch_sp);
 				_setpoint.yaw = _ext_yaw_sp;   // yaw acumulado de ROS
 			}
 			// ----------------------------------------------------------------
