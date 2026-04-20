@@ -124,14 +124,11 @@ void ActuatorEffectivenessHexaTilting::updateSetpoint(
     _vehicle_status_sub.copy(&status);
     bool armed = (status.arming_state == vehicle_status_s::ARMING_STATE_ARMED);
 
-    // ==========================================
-    // 1. LA MEMORIA DEL ESTADO
-    // ==========================================
     static bool modo_vuelo = false;
 
-    // Al desarmar: Reset total a 0.
     if (!armed) {
         modo_vuelo = false;
+
         for (int i = 0; i < 12; i++) {
             actuator_sp(i) = 0.0f;
             if (i < 6) _angulo_acumulado[i] = 0.0f;
@@ -142,9 +139,6 @@ void ActuatorEffectivenessHexaTilting::updateSetpoint(
 
     _armed_cycles++;
 
-    // ==========================================
-    // 2. LECTURA Y DEBUG
-    // ==========================================
     float throttle = -control_sp(5);
 
     if (_armed_cycles % 100 == 0) {
@@ -164,7 +158,7 @@ void ActuatorEffectivenessHexaTilting::updateSetpoint(
     // 4. LÓGICA DE CONTROL
     // ==========================================
     const float max_angle = 3.0f * 2.0f * M_PI_F;
-    const float max_step  = 0.08f;
+    const float max_step  = 0.18f;
 
     for (int i = 0; i < 6; i++) {
         float motor_thrust;
