@@ -312,10 +312,6 @@ void PositionControl::getLocalPositionSetpoint(vehicle_local_position_setpoint_s
 void PositionControl::getAttitudeSetpoint(vehicle_attitude_setpoint_s &attitude_setpoint) const
 {
 	if(_omni_mode){
-		//Omni: no tilt
-		// mantener roll y pitch en cero
-
-		//matrix::Quatf q_sp = matrix::Quatf(matrix::Eulerf(_roll_sp, _pitch_sp, _yaw_sp));
 
 		attitude_setpoint.q_d[0] = _q_sp(0); //W
 		attitude_setpoint.q_d[1] = _q_sp(1); //X
@@ -323,11 +319,11 @@ void PositionControl::getAttitudeSetpoint(vehicle_attitude_setpoint_s &attitude_
 		attitude_setpoint.q_d[3] = _q_sp(3); //Z
 
 
-		// convertir thrust de world frame a body frame con la actitud actual NO desdeada
+		// convertir thrust de world frame a body frame con la actitud actual
 		matrix::Dcmf R_current(_q_current);
-		//matrix::Dcmf R_sp(q_sp);
 
-		//matrix::Vector3f thrust_world = _thr_sp;
+
+		//Convertir thrust de world frame a body frame con la actitud actual
 		matrix::Vector3f thrust_body = R_current.transpose() * _thr_sp;
 
 		attitude_setpoint.thrust_body[0] = thrust_body(0);
