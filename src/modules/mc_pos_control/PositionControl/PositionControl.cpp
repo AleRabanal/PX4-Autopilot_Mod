@@ -214,31 +214,32 @@ void PositionControl::_accelerationControl()
 {
 	if(_omni_mode){
 
-		if (_acc_sp.norm() < 0.1f) {
-			_thr_sp = matrix::Vector3f(0.f, 0.f, -_lim_thr_min);
-			return;
-		}
+		// Sustituir NaN en acc_sp por cero antes de operar.
+		// addIfNotNanVector3f deja NaN si no hubo setpoint de aceleracion
+		// (p.ej. en vuelo de posicion puro donde solo hay vel_sp).
+		// Con NaN la multiplicacion produce NaN en thr_sp y update() falla.
+		const float acc_x = PX4_ISFINITE(_acc_sp(0)) ? _acc_sp(0) : 0.f;
+		const float acc_y = PX4_ISFINITE(_acc_sp(1)) ? _acc_sp(1) : 0.f;
+		const float acc_z = PX4_ISFINITE(_acc_sp(2)) ? _acc_sp(2) : 0.f;
 
-		// Omnidirectional thrust: directly convert acceleration setpoint to thrust
+		// Convertir aceleracion a thrust en los tres ejes (frame mundo NED).
+		// thr_z incluye compensacion de hover: a_z=0 -> thr_z = -hover_thrust (hover).
+		_thr_sp(0) = acc_x * (_hover_thrust / CONSTANTS_ONE_G);
+		_thr_sp(1) = acc_y * (_hover_thrust / CONSTANTS_ONE_G);
+		_thr_sp(2) = acc_z * (_hover_thrust / CONSTANTS_ONE_G) - _hover_thrust;
 
-		_thr_sp(0) = _acc_sp(0) * (_hover_thrust / CONSTANTS_ONE_G);
-		_thr_sp(1) = _acc_sp(1) * (_hover_thrust / CONSTANTS_ONE_G);
-		_thr_sp(2) = _acc_sp(2) * (_hover_thrust / CONSTANTS_ONE_G) - _hover_thrust;
-
-
-		// Limitar magnitud máxima
+		// Limitar magnitud maxima manteniendo direccion
 		if (_thr_sp.norm() > _lim_thr_max) {
 			_thr_sp = _thr_sp.normalized() * _lim_thr_max;
 		}
 
-		// Evitar thrust cero — solo aplicar si el vector tiene dirección definida
-		// Si la norma es demasiado pequeña para normalizar, forzar solo el eje Z (hover)
+		// Garantizar thrust minimo para que update() devuelva valido.
+		// Solo se aplica si el vector es casi nulo (hover exacto con XY=0).
 		if (_thr_sp.norm() < _lim_thr_min) {
 			if (_thr_sp.norm() > 1e-4f) {
-				// Vector con dirección válida, escalar manteniendo dirección
 				_thr_sp = _thr_sp.normalized() * _lim_thr_min;
 			} else {
-				// Vector casi nulo — forzar thrust mínimo en Z (hover seguro)
+				// Vector nulo: hover seguro en Z
 				_thr_sp = matrix::Vector3f(0.f, 0.f, -_lim_thr_min);
 			}
 		}

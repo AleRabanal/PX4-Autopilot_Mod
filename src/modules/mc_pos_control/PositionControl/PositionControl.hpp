@@ -80,6 +80,7 @@ public:
 	PositionControl() = default;
 	~PositionControl() = default;
 
+	bool getOmniMode() const { return _omni_mode; }
 	/**
 	 * Set the position control gains
 	 * @param P 3D vector of proportional gains for x,y,z axis
@@ -192,7 +193,7 @@ public:
 	static const trajectory_setpoint_s empty_trajectory_setpoint;
 
 	//Custo, omni mod
-	void setOmniMode(bool omni) { _omni_mode = omni; }
+	void setOmniMode(bool omni) { _omni_mode = omni; resetIntegral(); }
 	void setAttitudeSetPoints(float roll,float pitch){
 	        _roll_sp  = roll;
         	_pitch_sp = pitch;
@@ -256,7 +257,7 @@ private:
 
 	bool _omni_mode{true}; /**< enable omnidirectional control */
 
-	matrix::Quatf _q_sp; // Añade esta variable privada
+	matrix::Quatf _q_sp{1.f, 0.f, 0.f, 0.f}; // Añade esta variable privada
 
 
 };

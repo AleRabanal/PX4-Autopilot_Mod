@@ -116,6 +116,9 @@ private:
 	//Externa attitude (ROS2)
 	uORB::Subscription _external_att_sp_sub{ORB_ID(vehicle_attitude_setpoint)};
 
+	hrt_abstime _last_own_att_sp_timestamp{0}; /**< timestamp of the last attitude setpoint WE published,
+	                                                used to filter out our own loopback from _external_att_sp_sub */
+
     	float _ext_roll_sp{0.f};   // roll setpoint llegado de ROS
     	float _ext_pitch_sp{0.f};  // pitch setpoint llegado de ROS
     	float _ext_yaw_sp{0.f};    // yaw setpoint llegado de ROS
@@ -239,6 +242,10 @@ private:
 	uint8_t _xy_reset_counter{0};
 	uint8_t _z_reset_counter{0};
 	uint8_t _heading_reset_counter{0};
+
+	bool _omni_initialized = false;
+	bool _last_omni_mode = false;
+
 
 	perf_counter_t _cycle_perf{perf_alloc(PC_ELAPSED, MODULE_NAME": cycle time")};
 

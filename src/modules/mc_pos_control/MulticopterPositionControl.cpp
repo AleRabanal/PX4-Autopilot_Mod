@@ -1,20 +1,20 @@
 /****************************************************************************
  *
- *   Copyright (c) 2013-2020 PX4 Development Team. All rights reserved.
+ * Copyright (c) 2013-2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
+ * notice, this list of conditions and the following disclaimer in
+ * the documentation and/or other materials provided with the
+ * distribution.
  * 3. Neither the name PX4 nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
+ * used to endorse or promote products derived from this software
+ * without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -202,8 +202,8 @@ void MulticopterPositionControl::parameters_update(bool force)
 			Vector3f(_param_mpc_xy_vel_d_acc.get(), _param_mpc_xy_vel_d_acc.get(), _param_mpc_z_vel_d_acc.get()));
 		_control.setHorizontalThrustMargin(_param_mpc_thr_xy_marg.get());
 		_control.decoupleHorizontalAndVecticalAcceleration(_param_mpc_acc_decouple.get());
-		//Actulizar modo Omni
-		_control.setOmniMode(_param_mpc_omni_mode.get()>0);
+
+		// Inicialización diferida del modo Omni se maneja en el Run() para esperar al EKF
 		_goto_control.setParamMpcAccHor(_param_mpc_acc_hor.get());
 		_goto_control.setParamMpcAccDownMax(_param_mpc_acc_down_max.get());
 		_goto_control.setParamMpcAccUpMax(_param_mpc_acc_up_max.get());
@@ -431,6 +431,27 @@ void MulticopterPositionControl::Run()
 
 		PositionControlStates states{set_vehicle_states(vehicle_local_position, dt)};
 
+		// Lógica de activación segura del modo Omni basada en salud del EKF
+		bool ekf_ready = vehicle_local_position.v_xy_valid &&
+		                vehicle_local_position.v_z_valid &&
+		                vehicle_local_position.xy_valid;
+
+		if (_param_mpc_omni_mode.get() > 0) {
+			if (!_omni_initialized && ekf_ready) {
+				// Solo activamos cuando el EKF es estable
+				_control.setOmniMode(true);
+				_control.resetIntegral();
+				_omni_initialized = true;
+				PX4_INFO("Omni Mode: ACTIVADO (EKF estable)");
+			} else if (!_omni_initialized) {
+				// Forzamos modo estándar mientras el EKF despierta
+				_control.setOmniMode(false);
+			}
+		} else {
+			_omni_initialized = false;
+			_control.setOmniMode(false);
+		}
+
 		// If a goto setpoint is available this publishes a trajectory setpoint to go there
 		// If trajectory_setpoint is published elsewhere, do not use the goto setpoint
 		const bool goto_setpoint_enable = _vehicle_control_mode.flag_multicopter_position_control_enabled
@@ -527,12 +548,14 @@ void MulticopterPositionControl::Run()
 			// limit tilt during takeoff ramupup
 			const float tilt_limit_deg = (_takeoff.getTakeoffState() < TakeoffState::flight)
 						     ? _param_mpc_tiltmax_lnd.get() : _param_mpc_tiltmax_air.get();
-			//_control.setTiltLimit(_tilt_limit_slew_rate.update(math::radians(tilt_limit_deg), dt));
-			if (_param_mpc_omni_mode.get() > 0) {
+
+			// Si el modo Omni ha sido inicializado correctamente, permitimos tilt total
+			if (_omni_initialized) {
 				_control.setTiltLimit(math::radians(180.0f));
 			} else {
 				_control.setTiltLimit(_tilt_limit_slew_rate.update(math::radians(tilt_limit_deg), dt));
 			}
+
 			const float speed_up = _takeoff.updateRamp(dt,
 					       PX4_ISFINITE(_vehicle_constraints.speed_up) ? _vehicle_constraints.speed_up : _param_mpc_z_vel_max_up.get());
 			const float speed_down = PX4_ISFINITE(_vehicle_constraints.speed_down) ? _vehicle_constraints.speed_down :
@@ -555,40 +578,59 @@ void MulticopterPositionControl::Run()
 
 			_control.setInputSetpoint(_setpoint);
 
-			// ---- OMNI: leer actitud externa de ROS -------------------------
-			if (_param_mpc_omni_mode.get() > 0) {
-				vehicle_attitude_setpoint_s ext_att_sp;
-				if (_external_att_sp_sub.update(&ext_att_sp)) {
-					matrix::Quatf  q_offboard(ext_att_sp.q_d);
-					_control.setAttitudeQuaternion(q_offboard);
 
+
+
+			// ---- OMNI: leer actitud externa de ROS -------------------------
+			if (_omni_initialized) {
+
+				if (_vehicle_control_mode.flag_control_offboard_enabled) {
+					// MODO OFFBOARD: Escuchar actitud externa de ROS
+					vehicle_attitude_setpoint_s ext_att_sp{};
+
+					if (_external_att_sp_sub.update(&ext_att_sp)) {
+						// FILTRO LOOPBACK
+						if (ext_att_sp.timestamp != _last_own_att_sp_timestamp) {
+							matrix::Quatf q_offboard(ext_att_sp.q_d);
+							_control.setAttitudeQuaternion(q_offboard);
+							matrix::Eulerf euler_ext(q_offboard);
+							_setpoint.yaw = euler_ext.psi();
+						}
+					}
+					// Nota: Si no hay update o es loopback, _q_sp retiene su último
+					// valor (ZOH), lo cual mantiene tu modo Offboard libre de tirones.
+				} else {
+					// FALLBACK: Modo Manual o Position Control
+					// Ignoramos ROS. Usamos el yaw comandado por los sticks que viene
+					// en la trayectoria calculada (_setpoint.yaw).
+					// Mantenemos Roll y Pitch a 0 para vuelo omni plano.
+
+					float yaw_target = PX4_ISFINITE(_setpoint.yaw) ? _setpoint.yaw : states.yaw;
+					matrix::Quatf q_sp_manual(matrix::Eulerf(0.0f, 0.0f, yaw_target));
+					_control.setAttitudeQuaternion(q_sp_manual);
+
+					// Sincronizamos el setpoint final por seguridad
+					_setpoint.yaw = yaw_target;
 				}
-				//_control.setAttitudeSetPoints(_ext_roll_sp, _ext_pitch_sp);
-				_setpoint.yaw = _ext_yaw_sp;   // yaw acumulado de ROS
+
 			}
+			// ----------------------------------------------------------------
 			// ----------------------------------------------------------------
 
 			// update states
 			if (!PX4_ISFINITE(_setpoint.position[2])
 			    && PX4_ISFINITE(_setpoint.velocity[2]) && (fabsf(_setpoint.velocity[2]) > FLT_EPSILON)
 			    && PX4_ISFINITE(vehicle_local_position.z_deriv) && vehicle_local_position.z_valid && vehicle_local_position.v_z_valid) {
-				// A change in velocity is demanded and the altitude is not controlled.
-				// Set velocity to the derivative of position
-				// because it has less bias but blend it in across the landing speed range
-				//  <  MPC_LAND_SPEED: ramp up using altitude derivative without a step
-				//  >= MPC_LAND_SPEED: use altitude derivative
 				float weighting = fminf(fabsf(_setpoint.velocity[2]) / _param_mpc_land_speed.get(), 1.f);
 				states.velocity(2) = vehicle_local_position.z_deriv * weighting + vehicle_local_position.vz * (1.f - weighting);
 			}
 
 			if ((!PX4_ISFINITE(_setpoint.velocity[0]) || !PX4_ISFINITE(_setpoint.velocity[1]))
 			    && (!PX4_ISFINITE(_setpoint.position[0]) || !PX4_ISFINITE(_setpoint.position[1]))) {
-				// Horizontal velocity is not controlled, reset the integrators to avoid
-				// over-corrections when starting again.
 				_control.resetIntegralXY();
 			}
 
-			vehicle_attitude_s vehicle_att{}; //Pasar actitud actual al controlador
+			vehicle_attitude_s vehicle_att{};
 			if (_vehicle_attitude_sub.copy(&vehicle_att)) {
 				_control.setCurrentAttitude(matrix::Quatf(vehicle_att.q));
 			}
@@ -599,53 +641,40 @@ void MulticopterPositionControl::Run()
 
 			// Run position control
 			if (_control.update(dt)) {
-
-				// Valid control update - store for fallback
 				_last_valid_setpoint = _setpoint;
 
 			} else {
-
-				// Initial update failed - Try fallback if within timeout
 				if (now < _last_valid_setpoint.timestamp + 200_ms) {
-					// Use last valid setpoint
 					adjustSetpointForEKFResets(vehicle_local_position, _last_valid_setpoint);
 					_control.setInputSetpoint(_last_valid_setpoint);
 				}
 
-				// Still failing / not within timeout - Go to failsafe
 				if (!_control.update(dt)) {
-
-					_vehicle_constraints = {0, NAN, NAN, false, {}}; // reset constraints
-
+					_vehicle_constraints = {0, NAN, NAN, false, {}};
 					_control.setInputSetpoint(generateFailsafeSetpoint(vehicle_local_position.timestamp_sample, states, true));
 					_control.setVelocityLimits(_param_mpc_xy_vel_max.get(), _param_mpc_z_vel_max_up.get(), _param_mpc_z_vel_max_dn.get());
-
 					_control.update(dt);
 				}
 			}
 
-			// Publish internal position control setpoints
-			// on top of the input/feed-forward setpoints these containt the PID corrections
-			// This message is used by other modules (such as Landdetector) to determine vehicle intention.
 			vehicle_local_position_setpoint_s local_pos_sp{};
 			_control.getLocalPositionSetpoint(local_pos_sp);
 			local_pos_sp.timestamp = hrt_absolute_time();
 			_local_pos_sp_pub.publish(local_pos_sp);
 
-			// Publish attitude setpoint output
 			vehicle_attitude_setpoint_s attitude_setpoint{};
 			_control.getAttitudeSetpoint(attitude_setpoint);
 			attitude_setpoint.timestamp = hrt_absolute_time();
+			_last_own_att_sp_timestamp = attitude_setpoint.timestamp;
+
 			_vehicle_attitude_setpoint_pub.publish(attitude_setpoint);
 
 		} else {
-			// an update is necessary here because otherwise the takeoff state doesn't get skipped with non-altitude-controlled modes
 			_takeoff.updateTakeoffState(_vehicle_control_mode.flag_armed, _vehicle_land_detected.landed, false, 10.f, true,
 						    vehicle_local_position.timestamp_sample);
 			_control.resetIntegral();
 		}
 
-		// Publish takeoff status
 		const uint8_t takeoff_state = static_cast<uint8_t>(_takeoff.getTakeoffState());
 
 		if (takeoff_state != _takeoff_status_pub.get().takeoff_state
@@ -663,7 +692,6 @@ void MulticopterPositionControl::Run()
 trajectory_setpoint_s MulticopterPositionControl::generateFailsafeSetpoint(const hrt_abstime &now,
 		const PositionControlStates &states, bool warn)
 {
-	// rate limit the warnings
 	warn = warn && (now - _last_warn) > 2_s;
 
 	if (warn) {
@@ -675,37 +703,19 @@ trajectory_setpoint_s MulticopterPositionControl::generateFailsafeSetpoint(const
 	failsafe_setpoint.timestamp = now;
 
 	if (Vector2f(states.velocity).isAllFinite()) {
-		// don't move along xy
 		failsafe_setpoint.velocity[0] = failsafe_setpoint.velocity[1] = 0.f;
-
-		if (warn) {
-			PX4_WARN("Failsafe: stop and wait");
-		}
-
 	} else {
-		// descend with land speed since we can't stop
 		failsafe_setpoint.acceleration[0] = failsafe_setpoint.acceleration[1] = 0.f;
 		failsafe_setpoint.velocity[2] = _param_mpc_land_speed.get();
-
-		if (warn) {
-			PX4_WARN("Failsafe: blind land");
-		}
 	}
 
 	if (PX4_ISFINITE(states.velocity(2))) {
-		// don't move along z if we can stop in all dimensions
 		if (!PX4_ISFINITE(failsafe_setpoint.velocity[2])) {
 			failsafe_setpoint.velocity[2] = 0.f;
 		}
-
 	} else {
-		// emergency descend with a bit below hover thrust
 		failsafe_setpoint.velocity[2] = NAN;
 		failsafe_setpoint.acceleration[2] = .3f;
-
-		if (warn) {
-			PX4_WARN("Failsafe: blind descent");
-		}
 	}
 
 	return failsafe_setpoint;
@@ -748,7 +758,6 @@ void MulticopterPositionControl::adjustSetpointForEKFResets(const vehicle_local_
 		_vel_z_notch_filter.reset();
 	}
 
-	// save latest reset counters
 	_vxy_reset_counter = vehicle_local_position.vxy_reset_counter;
 	_vz_reset_counter = vehicle_local_position.vz_reset_counter;
 	_xy_reset_counter = vehicle_local_position.xy_reset_counter;
