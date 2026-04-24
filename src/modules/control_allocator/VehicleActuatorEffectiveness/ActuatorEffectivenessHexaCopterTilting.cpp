@@ -4,7 +4,7 @@
 
 #include "ActuatorEffectivenessHexaCopterTilting.hpp"
 
-
+#include <uORB/topics/vehicle_land_detected.h>
 
 #include <mathlib/mathlib.h>
 
@@ -120,64 +120,52 @@ void ActuatorEffectivenessHexaTilting::updateSetpoint(
 {
     if (matrix_index != 0) return;
 
+    // --- LEER ESTADOS DE PX4 ---
     vehicle_status_s status;
     _vehicle_status_sub.copy(&status);
     bool armed = (status.arming_state == vehicle_status_s::ARMING_STATE_ARMED);
 
+    static uORB::Subscription land_detected_sub{ORB_ID(vehicle_land_detected)};
+    vehicle_land_detected_s land_status;
+    bool is_landed = false;
+    if (land_detected_sub.copy(&land_status)) {
+        is_landed = land_status.landed || land_status.maybe_landed;
+    }
+
     static bool modo_vuelo = false;
 
+    // --- SI ESTÁ DESARMADO ---
     if (!armed) {
         modo_vuelo = false;
-
         for (int i = 0; i < 12; i++) {
             actuator_sp(i) = 0.0f;
             if (i < 6) _angulo_acumulado[i] = 0.0f;
         }
-        _armed_cycles = 0;
         return;
     }
 
-    _armed_cycles++;
-
     float throttle = -control_sp(5);
 
-    if (_armed_cycles % 100 == 0) {
-        PX4_INFO("DEBUG - Ciclos: %u | ModoVuelo: %d | Throttle: %.3f",
-                 (unsigned int)_armed_cycles, modo_vuelo, (double)throttle);
-    }
-
-    // ==========================================
-    // 3. TRANSICIÓN DE ESTADOS (La llave de paso)
-    // ==========================================
     if (!modo_vuelo && throttle > 0.15f) {
         modo_vuelo = true;
         PX4_INFO(">>> TRANSICION A MODO VUELO ACTIVADA <<<");
     }
-    // NUEVO: Apagar el modo vuelo al aterrizar (cuando el throttle baja al ralentí)
-    else if (modo_vuelo && throttle < 0.08f) {
-        modo_vuelo = false;
-        PX4_INFO(">>> TRANSICION A MODO SUELO (ATERRIZAJE) <<<");
-    }
 
-    // ==========================================
-    // 4. LÓGICA DE CONTROL
-    // ==========================================
-    const float max_angle = 3.0f * 2.0f * M_PI_F;
+    const float max_angle = 3.0f * 2.0f * M_PI_F; // O el multiplicador que uses
     const float max_step  = 0.18f;
 
+    // --- LÓGICA DE MOTORES Y SERVOS ---
     for (int i = 0; i < 6; i++) {
         float motor_thrust;
         float desired_rad;
 
-        if (!modo_vuelo) {
-            // MODO SUELO: Bloqueado en ralentí.
-            motor_thrust = 0.05f;
-            desired_rad  = 0.0f; // Fuerza a los motores a mirar hacia arriba
-
-            actuator_sp(i) = 0.0f;
-            actuator_sp(i + 6) = 0.0f;
-        } else {
-            // MODO VUELO: Leemos los actuadores
+        // ESTADO 1: EN EL SUELO (Esperando a despegar o esperando a desarmarse)
+        if (!modo_vuelo || is_landed) {
+            motor_thrust = 0.05f; // Mantenemos los motores al mínimo vital
+            desired_rad  = 0.0f;  // Servos bloqueados mirando hacia arriba (0º)
+        }
+        // ESTADO 2: VOLANDO (Libertad total 6DoF)
+        else {
             float F_vi = actuator_sp(i);
             float F_li = actuator_sp(i + 6);
 
@@ -189,19 +177,13 @@ void ActuatorEffectivenessHexaTilting::updateSetpoint(
 
                 if (motor_thrust < 0.05f) motor_thrust = 0.05f;
 
-                // AJUSTE: Subimos este umbral de 0.01 a 0.05.
-                // Evita que "ruido" pequeño en el suelo haga que los motores bailen.
-                if (motor_thrust > 0.05f) {
-                    desired_rad = atan2f(F_li, F_vi);
-                } else {
-                    desired_rad = _angulo_acumulado[i];
-                }
+                // Vuelo 6DoF: Permitimos que el atan2f haga su trabajo,
+                // incluso si F_vi es negativo (vuelo invertido).
+                desired_rad = atan2f(F_li, F_vi);
             }
         }
 
-        // ==========================================
-        // 5. MOVIMIENTO SUAVE DE SERVOS Y SALIDA
-        // ==========================================
+        // --- MANEJO DE ÁNGULO (Suavizado) ---
         float error = desired_rad - _angulo_acumulado[i];
         while (error >  M_PI_F) error -= 2.0f * M_PI_F;
         while (error < -M_PI_F) error += 2.0f * M_PI_F;
@@ -209,6 +191,7 @@ void ActuatorEffectivenessHexaTilting::updateSetpoint(
         error = math::constrain(error, -max_step, max_step);
         _angulo_acumulado[i] += error;
 
+        // --- SALIDAS ---
         actuator_sp(i)     = math::constrain(motor_thrust, 0.0f, 1.0f);
         actuator_sp(i + 6) = math::constrain(_angulo_acumulado[i] / max_angle, -1.0f, 1.0f);
     }
