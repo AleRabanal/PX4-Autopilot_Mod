@@ -245,9 +245,7 @@ private:
 	matrix::Vector3f _thr_sp; /**< desired thrust */
 	float _yaw_sp{}; /**< desired heading */
 	float _yawspeed_sp{}; /** desired yaw-speed */
-	//uORB::Subscription _att_sp_sub{ORB_ID(vehicle_attitude_setpoint)};
-	float _roll_sp{0.f};
-	float _pitch_sp{0.f};
+
 
 	matrix::Quatf _q_current{1.f,0.f,0.f,0.f}; //actitud actual del EKF
 
