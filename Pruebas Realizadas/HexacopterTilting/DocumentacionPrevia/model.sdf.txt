@@ -1,0 +1,1161 @@
+<?xml version="1.0"?>
+<sdf version="1.8">
+  <model name="catilt">
+    <static>false</static>
+    <self_collide>0</self_collide>
+
+    <!-- =========================
+         Parameters (interpreting your dimensions)
+         - Arm offsets from base_link in X: +/-0.2 m
+         - Front arm total span: 0.5 m (rotors at +/-0.25 m in Y)
+         - Rear arm total span: 0.8 m (rotors at +/-0.4 m in Y)
+         - Rotor diameter: 10 in = 0.254 m (radius 0.127 m)
+         ========================= -->
+
+    <!-- Base body -->
+    <link name="base_link">
+      <!-- Start slightly above ground -->
+      <pose>0 0 0.20 0 0 0</pose>
+
+      <inertial>
+        <mass>5.0</mass>
+        <inertia>
+          <ixx>0.015</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>0.05254167</iyy> <iyz>0</iyz>
+          <izz>0.06454167</izz>
+        </inertia>
+      </inertial>
+
+      <collision name="base_col">
+        <geometry>
+          <box><size>0.35 0.2 0.06</size></box>
+        </geometry>
+      </collision>
+      <visual name="base_vis">
+        <geometry>
+          <box><size>0.35 0.2 0.06</size></box>
+        </geometry>
+        <material>
+          <ambient>0.12 0.12 0.12 1</ambient>
+          <diffuse>0.18 0.18 0.18 1</diffuse>
+          <specular>0.2 0.2 0.2 1</specular>
+        </material>
+      </visual>
+      <visual name="battery_vis">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <box><size>0.16 0.07 0.03</size></box>
+        </geometry>
+        <material>
+          <ambient>0.12 0.08 0.02 1</ambient>
+          <diffuse>0.16 0.10 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="front_led_vis">
+        <pose>0.16 0 0.03 0 0 0</pose>
+        <geometry>
+          <box><size>0.012 0.12 0.004</size></box>
+        </geometry>
+        <material>
+          <ambient>0.35 0.04 0.04 1</ambient>
+          <diffuse>0.75 0.08 0.08 1</diffuse>
+          <emissive>1.0 0.2 0.2 1</emissive>
+        </material>
+      </visual>
+
+      <sensor name="imu_sensor" type="imu">
+        <frame>base_link</frame>
+        <topic>/model/catilt/imu</topic>
+        <always_on>1</always_on>
+        <update_rate>200</update_rate>
+        <imu>
+          <angular_velocity>
+            <!-- Noise modeled after IIM42653 -->
+            <!-- 0.05 deg/s converted to rad/s -->
+            <x>
+              <noise type="gaussian">
+                <mean>0.0</mean>
+                <stddev>0.0008726646</stddev>
+              </noise>
+            </x>
+            <y>
+              <noise type="gaussian">
+                <mean>0.0</mean>
+                <stddev>0.0008726646</stddev>
+              </noise>
+            </y>
+            <z>
+              <noise type="gaussian">
+                <mean>0.0</mean>
+                <stddev>0.0008726646</stddev>
+              </noise>
+            </z>
+          </angular_velocity>
+          <linear_acceleration>
+            <!-- Noise modeled after IIM42653 -->
+            <!-- X & Y axis: 0.65 mg-rms converted to m/ss -->
+            <x>
+              <noise type="gaussian">
+                <mean>0.0</mean>
+                <stddev>0.00637</stddev>
+              </noise>
+            </x>
+            <y>
+              <noise type="gaussian">
+                <mean>0.0</mean>
+                <stddev>0.00637</stddev>
+              </noise>
+            </y>
+            <!-- Z axis: 0.70 mg-rms converted to m/ss-->
+            <z>
+              <noise type="gaussian">
+                <mean>0.0</mean>
+                <stddev>0.00686</stddev>
+              </noise>
+            </z>
+          </linear_acceleration>
+        </imu>
+      </sensor>
+    </link>
+
+    <!-- Landing gear: four fixed wheels -->
+    <link name="gear_wheel_fl">
+      <pose>0.18 0.18 0.05 1.570796 0 0</pose>
+      <inertial>
+        <mass>0.03</mass>
+        <inertia>
+          <ixx>2.1e-05</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>2.1e-05</iyy> <iyz>0</iyz>
+          <izz>3.75e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="gear_wheel_fl_col">
+        <geometry>
+          <cylinder><radius>0.05</radius><length>0.03</length></cylinder>
+        </geometry>
+      </collision>
+      <visual name="gear_wheel_fl_vis">
+        <geometry>
+          <cylinder><radius>0.05</radius><length>0.03</length></cylinder>
+        </geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.05 0.05 0.05 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <link name="gear_wheel_fr">
+      <pose>0.18 -0.18 0.05 1.570796 0 0</pose>
+      <inertial>
+        <mass>0.03</mass>
+        <inertia>
+          <ixx>2.1e-05</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>2.1e-05</iyy> <iyz>0</iyz>
+          <izz>3.75e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="gear_wheel_fr_col">
+        <geometry>
+          <cylinder><radius>0.05</radius><length>0.03</length></cylinder>
+        </geometry>
+      </collision>
+      <visual name="gear_wheel_fr_vis">
+        <geometry>
+          <cylinder><radius>0.05</radius><length>0.03</length></cylinder>
+        </geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.05 0.05 0.05 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <link name="gear_wheel_bl">
+      <pose>-0.18 0.18 0.05 1.570796 0 0</pose>
+      <inertial>
+        <mass>0.03</mass>
+        <inertia>
+          <ixx>2.1e-05</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>2.1e-05</iyy> <iyz>0</iyz>
+          <izz>3.75e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="gear_wheel_bl_col">
+        <geometry>
+          <cylinder><radius>0.05</radius><length>0.03</length></cylinder>
+        </geometry>
+      </collision>
+      <visual name="gear_wheel_bl_vis">
+        <geometry>
+          <cylinder><radius>0.05</radius><length>0.03</length></cylinder>
+        </geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.05 0.05 0.05 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <link name="gear_wheel_br">
+      <pose>-0.18 -0.18 0.05 1.570796 0 0</pose>
+      <inertial>
+        <mass>0.03</mass>
+        <inertia>
+          <ixx>2.1e-05</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>2.1e-05</iyy> <iyz>0</iyz>
+          <izz>3.75e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name="gear_wheel_br_col">
+        <geometry>
+          <cylinder><radius>0.05</radius><length>0.03</length></cylinder>
+        </geometry>
+      </collision>
+      <visual name="gear_wheel_br_vis">
+        <geometry>
+          <cylinder><radius>0.05</radius><length>0.03</length></cylinder>
+        </geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.05 0.05 0.05 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <link name="gear_strut_fl">
+      <pose>0.18 0.18 0.11 0 0 0</pose>
+      <inertial>
+        <mass>0.03</mass>
+        <inertia>
+          <ixx>7.273e-05</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>7.273e-05</iyy> <iyz>0</iyz>
+          <izz>9.6e-07</izz>
+        </inertia>
+      </inertial>
+      <collision name="gear_strut_fl_col">
+        <geometry>
+          <cylinder><radius>0.008</radius><length>0.17</length></cylinder>
+        </geometry>
+      </collision>
+      <visual name="gear_strut_fl_vis_link">
+        <geometry>
+          <cylinder><radius>0.008</radius><length>0.17</length></cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="gear_strut_fr">
+      <pose>0.18 -0.18 0.11 0 0 0</pose>
+      <inertial>
+        <mass>0.03</mass>
+        <inertia>
+          <ixx>7.273e-05</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>7.273e-05</iyy> <iyz>0</iyz>
+          <izz>9.6e-07</izz>
+        </inertia>
+      </inertial>
+      <collision name="gear_strut_fr_col">
+        <geometry>
+          <cylinder><radius>0.008</radius><length>0.17</length></cylinder>
+        </geometry>
+      </collision>
+      <visual name="gear_strut_fr_vis_link">
+        <geometry>
+          <cylinder><radius>0.008</radius><length>0.17</length></cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="gear_strut_bl">
+      <pose>-0.18 0.18 0.11 0 0 0</pose>
+      <inertial>
+        <mass>0.03</mass>
+        <inertia>
+          <ixx>7.273e-05</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>7.273e-05</iyy> <iyz>0</iyz>
+          <izz>9.6e-07</izz>
+        </inertia>
+      </inertial>
+      <collision name="gear_strut_bl_col">
+        <geometry>
+          <cylinder><radius>0.008</radius><length>0.17</length></cylinder>
+        </geometry>
+      </collision>
+      <visual name="gear_strut_bl_vis_link">
+        <geometry>
+          <cylinder><radius>0.008</radius><length>0.17</length></cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="gear_strut_br">
+      <pose>-0.18 -0.18 0.11 0 0 0</pose>
+      <inertial>
+        <mass>0.03</mass>
+        <inertia>
+          <ixx>7.273e-05</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>7.273e-05</iyy> <iyz>0</iyz>
+          <izz>9.6e-07</izz>
+        </inertia>
+      </inertial>
+      <collision name="gear_strut_br_col">
+        <geometry>
+          <cylinder><radius>0.008</radius><length>0.17</length></cylinder>
+        </geometry>
+      </collision>
+      <visual name="gear_strut_br_vis_link">
+        <geometry>
+          <cylinder><radius>0.008</radius><length>0.17</length></cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint name="gear_strut_fl_fixed" type="fixed">
+      <parent>base_link</parent>
+      <child>gear_strut_fl</child>
+    </joint>
+    <joint name="gear_strut_fr_fixed" type="fixed">
+      <parent>base_link</parent>
+      <child>gear_strut_fr</child>
+    </joint>
+    <joint name="gear_strut_bl_fixed" type="fixed">
+      <parent>base_link</parent>
+      <child>gear_strut_bl</child>
+    </joint>
+    <joint name="gear_strut_br_fixed" type="fixed">
+      <parent>base_link</parent>
+      <child>gear_strut_br</child>
+    </joint>
+
+    <joint name="gear_wheel_fl_fixed" type="fixed">
+      <parent>gear_strut_fl</parent>
+      <child>gear_wheel_fl</child>
+    </joint>
+    <joint name="gear_wheel_fr_fixed" type="fixed">
+      <parent>gear_strut_fr</parent>
+      <child>gear_wheel_fr</child>
+    </joint>
+    <joint name="gear_wheel_bl_fixed" type="fixed">
+      <parent>gear_strut_bl</parent>
+      <child>gear_wheel_bl</child>
+    </joint>
+    <joint name="gear_wheel_br_fixed" type="fixed">
+      <parent>gear_strut_br</parent>
+      <child>gear_wheel_br</child>
+    </joint>
+
+    <!-- Front arm link: spans left-right; pitches as a unit -->
+    <link name="front_arm">
+      <pose>0.2 0 0.2 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia>
+          <ixx>0.00420833</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>8.33333e-05</iyy>
+          <iyz>0</iyz>
+          <izz>0.00420833</izz>
+        </inertia>
+      </inertial>
+      <collision name="front_arm_col">
+        <geometry>
+          <box><size>0.05 0.5 0.02</size></box>
+        </geometry>
+      </collision>
+      <visual name="front_arm_vis">
+        <geometry>
+          <box><size>0.05 0.5 0.02</size></box>
+        </geometry>
+        <material>
+          <ambient>0.08 0.08 0.08 1</ambient>
+          <diffuse>0.12 0.12 0.12 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- Servo: Dynamixel XM430-W210 (front arm pitch) -->
+    <joint name="front_arm_pitch_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>front_arm</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <!-- full turn -->
+          <lower>-3.141593</lower>
+          <upper> 3.141593</upper>
+          <effort>3.0</effort>
+          <velocity>8.063</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- Back arm link: spans left-right; pitches as a unit -->
+    <link name="back_arm">
+      <pose>-0.2 0 0.2 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia>
+          <ixx>0.01070833</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>8.33333e-05</iyy>
+          <iyz>0</iyz>
+          <izz>0.01070833</izz>
+        </inertia>
+      </inertial>
+      <collision name="back_arm_col">
+        <geometry>
+          <box><size>0.05 0.8 0.02</size></box>
+        </geometry>
+      </collision>
+      <visual name="back_arm_vis">
+        <geometry>
+          <box><size>0.05 0.8 0.02</size></box>
+        </geometry>
+        <material>
+          <ambient>0.08 0.08 0.08 1</ambient>
+          <diffuse>0.12 0.12 0.12 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- Servo: Dynamixel XM430-W210 (rear arm pitch) -->
+    <joint name="back_arm_pitch_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>back_arm</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <!-- full turn -->
+          <lower>-3.141593</lower>
+          <upper> 3.141593</upper>
+          <effort>3.0</effort>
+          <velocity>8.063</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- Helper macro-by-convention:
+         Each rotor has:
+         - rotor_i_tilt_link (mounted on an arm)
+         - rotor_i (spinning link)
+         - rotor_i_tilt_joint (servo, +/-20 deg)
+         - rotor_i_spin_joint (motor model uses this)
+    -->
+
+    <link name="rotor_0_tilt_link">
+      <pose>0.2 -0.25 0.2 0 0 0</pose>
+      <inertial>
+        <mass>0.06</mass>
+        <inertia>
+          <ixx>8.0e-06</ixx>
+          <iyy>8.0e-06</iyy>
+          <izz>1.2e-05</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="r0_tilt_vis">
+        <geometry><cylinder><radius>0.02</radius><length>0.02</length></cylinder></geometry>
+        <material>
+          <ambient>0.1 0.1 0.1 1</ambient>
+          <diffuse>0.15 0.15 0.15 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r0_motor_pod_vis">
+        <pose>0 0 0.01 0 0 0</pose>
+        <geometry><cylinder><radius>0.03</radius><length>0.07</length></cylinder></geometry>
+        <material>
+          <ambient>0.2 0.02 0.02 1</ambient>
+          <diffuse>0.3 0.04 0.04 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- Servo: Dynamixel XC330-T288 (rotor 0 tilt) -->
+    <joint name="rotor_0_tilt_joint" type="revolute">
+      <parent>front_arm</parent>
+      <child>rotor_0_tilt_link</child>
+      <!-- Tilt axis about X (forward). Thrust then tilts sideways (Y) -->
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-0.349066</lower>
+          <upper> 0.349066</upper>
+          <effort>0.92</effort>
+          <velocity>6.807</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <link name="rotor_0">
+      <pose relative_to="rotor_0_tilt_link">0 0 0.025 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia>
+          <ixx>8.06452e-04</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>8.06452e-04</iyy> <iyz>0</iyz>
+          <izz>1.61290e-03</izz>
+        </inertia>
+      </inertial>
+      <visual name="r0_hub_vis">
+        <geometry><cylinder><radius>0.03</radius><length>0.01</length></cylinder></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r0_blade1_vis">
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r0_blade2_vis">
+        <pose>0 0 0 0 0 1.570796</pose>
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="rotor_0_spin_joint" type="revolute">
+      <parent>rotor_0_tilt_link</parent>
+      <child>rotor_0</child>
+      <axis><xyz>0 0 1</xyz></axis>
+    </joint>
+
+    <link name="rotor_1_tilt_link">
+      <pose>-0.2 -0.4 0.2 0 0 0</pose>
+      <inertial>
+        <mass>0.06</mass>
+        <inertia>
+          <ixx>8.0e-06</ixx>
+          <iyy>8.0e-06</iyy>
+          <izz>1.2e-05</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="r1_tilt_vis">
+        <geometry><cylinder><radius>0.02</radius><length>0.02</length></cylinder></geometry>
+        <material>
+          <ambient>0.1 0.1 0.1 1</ambient>
+          <diffuse>0.15 0.15 0.15 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r1_motor_pod_vis">
+        <pose>0 0 0.01 0 0 0</pose>
+        <geometry><cylinder><radius>0.03</radius><length>0.07</length></cylinder></geometry>
+        <material>
+          <ambient>0.02 0.2 0.02 1</ambient>
+          <diffuse>0.04 0.3 0.04 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- Servo: Dynamixel XC330-T288 (rotor 1 tilt) -->
+    <joint name="rotor_1_tilt_joint" type="revolute">
+      <parent>back_arm</parent>
+      <child>rotor_1_tilt_link</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-0.349066</lower>
+          <upper> 0.349066</upper>
+          <effort>0.92</effort>
+          <velocity>6.807</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <link name="rotor_1">
+      <pose relative_to="rotor_1_tilt_link">0 0 0.025 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia>
+          <ixx>8.06452e-04</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>8.06452e-04</iyy> <iyz>0</iyz>
+          <izz>1.61290e-03</izz>
+        </inertia>
+      </inertial>
+      <visual name="r1_hub_vis">
+        <geometry><cylinder><radius>0.03</radius><length>0.01</length></cylinder></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r1_blade1_vis">
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r1_blade2_vis">
+        <pose>0 0 0 0 0 1.570796</pose>
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="rotor_1_spin_joint" type="revolute">
+      <parent>rotor_1_tilt_link</parent>
+      <child>rotor_1</child>
+      <axis><xyz>0 0 1</xyz></axis>
+    </joint>
+
+    <link name="rotor_2_tilt_link">
+      <pose>-0.2 0.4 0.2 0 0 0</pose>
+      <inertial>
+        <mass>0.06</mass>
+        <inertia>
+          <ixx>8.0e-06</ixx>
+          <iyy>8.0e-06</iyy>
+          <izz>1.2e-05</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="r2_tilt_vis">
+        <geometry><cylinder><radius>0.02</radius><length>0.02</length></cylinder></geometry>
+        <material>
+          <ambient>0.1 0.1 0.1 1</ambient>
+          <diffuse>0.15 0.15 0.15 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r2_motor_pod_vis">
+        <pose>0 0 0.01 0 0 0</pose>
+        <geometry><cylinder><radius>0.03</radius><length>0.07</length></cylinder></geometry>
+        <material>
+          <ambient>0.02 0.02 0.2 1</ambient>
+          <diffuse>0.04 0.04 0.3 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- Servo: Dynamixel XC330-T288 (rotor 2 tilt) -->
+    <joint name="rotor_2_tilt_joint" type="revolute">
+      <parent>back_arm</parent>
+      <child>rotor_2_tilt_link</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-0.349066</lower>
+          <upper> 0.349066</upper>
+          <effort>0.92</effort>
+          <velocity>6.807</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <link name="rotor_2">
+      <pose relative_to="rotor_2_tilt_link">0 0 0.025 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia>
+          <ixx>8.06452e-04</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>8.06452e-04</iyy> <iyz>0</iyz>
+          <izz>1.61290e-03</izz>
+        </inertia>
+      </inertial>
+      <visual name="r2_hub_vis">
+        <geometry><cylinder><radius>0.03</radius><length>0.01</length></cylinder></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r2_blade1_vis">
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r2_blade2_vis">
+        <pose>0 0 0 0 0 1.570796</pose>
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="rotor_2_spin_joint" type="revolute">
+      <parent>rotor_2_tilt_link</parent>
+      <child>rotor_2</child>
+      <axis><xyz>0 0 1</xyz></axis>
+    </joint>
+
+
+    <link name="rotor_3_tilt_link">
+      <pose>0.2 0.25 0.2 0 0 0</pose>
+      <inertial>
+        <mass>0.06</mass>
+        <inertia>
+          <ixx>8.0e-06</ixx>
+          <iyy>8.0e-06</iyy>
+          <izz>1.2e-05</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="r3_tilt_vis">
+        <geometry><cylinder><radius>0.02</radius><length>0.02</length></cylinder></geometry>
+        <material>
+          <ambient>0.1 0.1 0.1 1</ambient>
+          <diffuse>0.15 0.15 0.15 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r3_motor_pod_vis">
+        <pose>0 0 0.01 0 0 0</pose>
+        <geometry><cylinder><radius>0.03</radius><length>0.07</length></cylinder></geometry>
+        <material>
+          <ambient>0.2 0.2 0.02 1</ambient>
+          <diffuse>0.3 0.3 0.04 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- Servo: Dynamixel XC330-T288 (rotor 3 tilt) -->
+    <joint name="rotor_3_tilt_joint" type="revolute">
+      <parent>front_arm</parent>
+      <child>rotor_3_tilt_link</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-0.349066</lower>
+          <upper> 0.349066</upper>
+          <effort>0.92</effort>
+          <velocity>6.807</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <link name="rotor_3">
+      <pose relative_to="rotor_3_tilt_link">0 0 0.025 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia>
+          <ixx>8.06452e-04</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>8.06452e-04</iyy> <iyz>0</iyz>
+          <izz>1.61290e-03</izz>
+        </inertia>
+      </inertial>
+      <visual name="r3_hub_vis">
+        <geometry><cylinder><radius>0.03</radius><length>0.01</length></cylinder></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r3_blade1_vis">
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r3_blade2_vis">
+        <pose>0 0 0 0 0 1.570796</pose>
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="rotor_3_spin_joint" type="revolute">
+      <parent>rotor_3_tilt_link</parent>
+      <child>rotor_3</child>
+      <axis><xyz>0 0 1</xyz></axis>
+    </joint>
+
+    <!-- Lower coaxial rotors (17% thrust loss configured in motorConstant) -->
+    <link name="rotor_4">
+      <pose relative_to="rotor_0_tilt_link">0 0 -0.025 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia>
+          <ixx>8.06452e-04</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>8.06452e-04</iyy> <iyz>0</iyz>
+          <izz>1.61290e-03</izz>
+        </inertia>
+      </inertial>
+      <visual name="r4_hub_vis">
+        <geometry><cylinder><radius>0.03</radius><length>0.01</length></cylinder></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r4_blade1_vis">
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r4_blade2_vis">
+        <pose>0 0 0 0 0 1.570796</pose>
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+    </link>
+    <joint name="rotor_4_spin_joint" type="revolute">
+      <parent>rotor_0_tilt_link</parent>
+      <child>rotor_4</child>
+      <axis><xyz>0 0 1</xyz></axis>
+    </joint>
+
+    <link name="rotor_5">
+      <pose relative_to="rotor_1_tilt_link">0 0 -0.025 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia>
+          <ixx>8.06452e-04</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>8.06452e-04</iyy> <iyz>0</iyz>
+          <izz>1.61290e-03</izz>
+        </inertia>
+      </inertial>
+      <visual name="r5_hub_vis">
+        <geometry><cylinder><radius>0.03</radius><length>0.01</length></cylinder></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r5_blade1_vis">
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r5_blade2_vis">
+        <pose>0 0 0 0 0 1.570796</pose>
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+    </link>
+    <joint name="rotor_5_spin_joint" type="revolute">
+      <parent>rotor_1_tilt_link</parent>
+      <child>rotor_5</child>
+      <axis><xyz>0 0 1</xyz></axis>
+    </joint>
+
+    <link name="rotor_6">
+      <pose relative_to="rotor_2_tilt_link">0 0 -0.025 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia>
+          <ixx>8.06452e-04</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>8.06452e-04</iyy> <iyz>0</iyz>
+          <izz>1.61290e-03</izz>
+        </inertia>
+      </inertial>
+      <visual name="r6_hub_vis">
+        <geometry><cylinder><radius>0.03</radius><length>0.01</length></cylinder></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r6_blade1_vis">
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r6_blade2_vis">
+        <pose>0 0 0 0 0 1.570796</pose>
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+    </link>
+    <joint name="rotor_6_spin_joint" type="revolute">
+      <parent>rotor_2_tilt_link</parent>
+      <child>rotor_6</child>
+      <axis><xyz>0 0 1</xyz></axis>
+    </joint>
+
+    <link name="rotor_7">
+      <pose relative_to="rotor_3_tilt_link">0 0 -0.025 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia>
+          <ixx>8.06452e-04</ixx> <ixy>0</ixy> <ixz>0</ixz>
+          <iyy>8.06452e-04</iyy> <iyz>0</iyz>
+          <izz>1.61290e-03</izz>
+        </inertia>
+      </inertial>
+      <visual name="r7_hub_vis">
+        <geometry><cylinder><radius>0.03</radius><length>0.01</length></cylinder></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r7_blade1_vis">
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+      <visual name="r7_blade2_vis">
+        <pose>0 0 0 0 0 1.570796</pose>
+        <geometry><box><size>0.254 0.03 0.002</size></box></geometry>
+        <material>
+          <ambient>0.02 0.02 0.02 1</ambient>
+          <diffuse>0.03 0.03 0.03 1</diffuse>
+        </material>
+      </visual>
+    </link>
+    <joint name="rotor_7_spin_joint" type="revolute">
+      <parent>rotor_3_tilt_link</parent>
+      <child>rotor_7</child>
+      <axis><xyz>0 0 1</xyz></axis>
+    </joint>
+
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+            name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>catilt</robotNamespace>
+      <jointName>rotor_0_spin_joint</jointName>
+      <linkName>rotor_0</linkName>
+      <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+      <actuator_number>0</actuator_number>
+      <motorType>velocity</motorType>
+      <turningDirection>cw</turningDirection>
+      <maxRotVelocity>1000.0</maxRotVelocity>
+      <motorConstant>3.75e-5</motorConstant>
+      <momentConstant>0.02</momentConstant>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+    </plugin>
+
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+            name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>catilt</robotNamespace>
+      <jointName>rotor_1_spin_joint</jointName>
+      <linkName>rotor_1</linkName>
+      <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+      <actuator_number>1</actuator_number>
+      <motorType>velocity</motorType>
+      <turningDirection>ccw</turningDirection>
+      <maxRotVelocity>1000.0</maxRotVelocity>
+      <motorConstant>3.75e-5</motorConstant>
+      <momentConstant>0.02</momentConstant>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+    </plugin>
+
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+            name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>catilt</robotNamespace>
+      <jointName>rotor_2_spin_joint</jointName>
+      <linkName>rotor_2</linkName>
+      <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+      <actuator_number>2</actuator_number>
+      <motorType>velocity</motorType>
+      <turningDirection>cw</turningDirection>
+      <maxRotVelocity>1000.0</maxRotVelocity>
+      <motorConstant>3.75e-5</motorConstant>
+      <momentConstant>0.02</momentConstant>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+    </plugin>
+
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+            name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>catilt</robotNamespace>
+      <jointName>rotor_3_spin_joint</jointName>
+      <linkName>rotor_3</linkName>
+      <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+      <actuator_number>3</actuator_number>
+      <motorType>velocity</motorType>
+      <turningDirection>ccw</turningDirection>
+      <maxRotVelocity>1000.0</maxRotVelocity>
+      <motorConstant>3.75e-5</motorConstant>
+      <momentConstant>0.02</momentConstant>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+    </plugin>
+
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+            name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>catilt</robotNamespace>
+      <jointName>rotor_4_spin_joint</jointName>
+      <linkName>rotor_4</linkName>
+      <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+      <actuator_number>4</actuator_number>
+      <motorType>velocity</motorType>
+      <turningDirection>ccw</turningDirection>
+      <maxRotVelocity>1000.0</maxRotVelocity>
+      <motorConstant>3.75e-5</motorConstant>
+      <momentConstant>0.02</momentConstant>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+    </plugin>
+
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+            name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>catilt</robotNamespace>
+      <jointName>rotor_5_spin_joint</jointName>
+      <linkName>rotor_5</linkName>
+      <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+      <actuator_number>5</actuator_number>
+      <motorType>velocity</motorType>
+      <turningDirection>cw</turningDirection>
+      <maxRotVelocity>1000.0</maxRotVelocity>
+      <motorConstant>3.75e-5</motorConstant>
+      <momentConstant>0.02</momentConstant>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+    </plugin>
+
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+            name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>catilt</robotNamespace>
+      <jointName>rotor_6_spin_joint</jointName>
+      <linkName>rotor_6</linkName>
+      <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+      <actuator_number>6</actuator_number>
+      <motorType>velocity</motorType>
+      <turningDirection>ccw</turningDirection>
+      <maxRotVelocity>1000.0</maxRotVelocity>
+      <motorConstant>3.75e-5</motorConstant>
+      <momentConstant>0.02</momentConstant>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+    </plugin>
+
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+            name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>catilt</robotNamespace>
+      <jointName>rotor_7_spin_joint</jointName>
+      <linkName>rotor_7</linkName>
+      <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+      <actuator_number>7</actuator_number>
+      <motorType>velocity</motorType>
+      <turningDirection>cw</turningDirection>
+      <maxRotVelocity>1000.0</maxRotVelocity>
+      <motorConstant>3.75e-5</motorConstant>
+      <momentConstant>0.02</momentConstant>
+      <timeConstantUp>0.0125</timeConstantUp>
+      <timeConstantDown>0.025</timeConstantDown>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+    </plugin>
+
+    <!-- =========================
+         Servo controllers (JointPositionController)
+         Command topics: /model/catilt/servo_{0..5} (gz.msgs.Double)
+         Joint order:
+           0=front_arm_pitch_joint, 1=back_arm_pitch_joint,
+           2=rotor_0_tilt_joint, 3=rotor_1_tilt_joint,
+           4=rotor_2_tilt_joint, 5=rotor_3_tilt_joint
+         ========================= -->
+
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+      <joint_name>front_arm_pitch_joint</joint_name>
+      <sub_topic>servo_0</sub_topic>
+      <p_gain>20.0</p_gain>
+      <i_gain>0.0</i_gain>
+      <d_gain>1.5</d_gain>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+      <joint_name>back_arm_pitch_joint</joint_name>
+      <sub_topic>servo_1</sub_topic>
+      <p_gain>20.0</p_gain>
+      <i_gain>0.0</i_gain>
+      <d_gain>1.5</d_gain>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+      <joint_name>rotor_0_tilt_joint</joint_name>
+      <sub_topic>servo_2</sub_topic>
+      <p_gain>20.0</p_gain>
+      <i_gain>0.0</i_gain>
+      <d_gain>1.5</d_gain>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+      <joint_name>rotor_1_tilt_joint</joint_name>
+      <sub_topic>servo_3</sub_topic>
+      <p_gain>20.0</p_gain>
+      <i_gain>0.0</i_gain>
+      <d_gain>1.5</d_gain>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+      <joint_name>rotor_2_tilt_joint</joint_name>
+      <sub_topic>servo_4</sub_topic>
+      <p_gain>20.0</p_gain>
+      <i_gain>0.0</i_gain>
+      <d_gain>1.5</d_gain>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+      <joint_name>rotor_3_tilt_joint</joint_name>
+      <sub_topic>servo_5</sub_topic>
+      <p_gain>20.0</p_gain>
+      <i_gain>0.0</i_gain>
+      <d_gain>1.5</d_gain>
+    </plugin>
+
+        <!-- =========================
+         ODOMETRY PUBLISHER
+         ========================= -->
+    <plugin filename="gz-sim-odometry-publisher-system"
+            name="gz::sim::systems::OdometryPublisher">
+      <odom_frame>odom</odom_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+      <dimensions>3</dimensions>
+      <odom_publish_frequency>100</odom_publish_frequency>
+      <publish_tf>false</publish_tf>
+    </plugin>
+
+    <!-- Joint states publisher -->
+    <!-- <plugin filename="gz-sim-joint-state-publisher-system"
+            name="gz::sim::systems::JointStatePublisher">
+      <topic>/model/catilt/joint_state</topic>
+      <publish_frequency>100</publish_frequency>
+    </plugin> -->
+
+  </model>
+</sdf>

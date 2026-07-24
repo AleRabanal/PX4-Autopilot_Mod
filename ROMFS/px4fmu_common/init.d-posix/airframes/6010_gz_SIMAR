@@ -11,7 +11,7 @@ PX4_SIMULATOR=${PX4_SIMULATOR:=gz}
 PX4_GZ_WORLD=${PX4_GZ_WORLD:=default}
 PX4_SIM_MODEL=${PX4_SIM_MODEL:=SIMAR}
 
-param set-default CA_AIRFRAME 0
+param set-default CA_AIRFRAME 1
 
 param set-default SYS_AUTOSTART 6010
 

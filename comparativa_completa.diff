@@ -1,0 +1,1883 @@
+diff --cc .gitignore
+index 0000000000,620d3dc8a4,0000000000,0000000000,0000000000,fcf982c8df..a5309e6b90
+mode 000000,100644,000000,000000,000000,100644..100644
+--- a/.gitignore
++++ b/.gitignore
+@@@@@@@ -1,0 -1,13 -1,0 -1,0 -1,0 -1,114 +1,1 @@@@@@@
+ -    # Compiled Object files
+ -    *.slo
+ -    *.lo
+     -*.dSYM
+ -   -*.o
+     -*.gch
+     -*.pyc
+     -*~
+     -.*.swp
+     -.context
+     -.cproject
+     -.DS_Store
+     -.gdbinit
+     -.gdb_history
+     -.project
+     -.settings
+     -.swp
+     -.~lock.*
+     -Testing/
+     -Packages/*
+     -build/*
+     -build_*/
+     -cscope.out
+     -cscope.in.out
+     -cscope.po.out
+     -Firmware.sublime-workspace
+     -user.sublime*
+     -/Documentation/doxy.log
+     -/Documentation/html/
+     -/Documentation/doxygen*objdb*tmp
+     -.tags
+     -tags
+     -.tags_sorted_by_file
+     -.pydevproject
+     -.ropeproject
+     -*.orig
+     -Firmware.zip
+     -*.generated.h
+     -.vagrant
+     -*.pretty
+     -xcode
+     -rootfs/
+     -*.autosave
+     -CMakeLists.txt.user
+     -GPATH
+     -GRTAGS
+     -GTAGS
+     -*.creator
+     -*.creator.user
+     -*.files
+     -*.includes
+ -   -
+ -    # Compiled Dynamic libraries
+ -    *.so
+ -    *.dylib
+     -# CLion ignores
+     -.idea
+     -cmake-build-*/
+ -   -
+ -    # Compiled Static libraries
+ -    *.lai
+ -    *.la
+ -    *.a
+     -posix-configs/SITL/init/test/*_generated
+     -
+     -/airframes.md
+     -/airframes.xml
+     -/parameters.md
+     -/parameters.xml
+     -/modules
+     -/msg/ros/*.msg
+     -
+     -*.gcov
+     -.coverage
+     -.coverage.*
+     -
+     -# KDevelop ignores
+     -.kdev4/*
+     -*.kdev4
+     -
+     -# cmake in tree (ninja)
+     -.ninja_deps
+     -.ninja_log
+     -bin/
+     -build.ninja
+     -cmake_install.cmake
+     -CMakeCache.txt
+     -CMakeFiles
+     -compile_commands.json
+     -CPackConfig.cmake
+     -CPackSourceConfig.cmake
+     -CTestTestfile.cmake
+     -external/
+     -rules.ninja
+     -
+     -# in tree build
+     -**/*.a
+     -**/*.px4mod
+     -**/*.stamp
+     -/coverage*
+     -/functional-*
+     -/generated_params/
+     -/googletest-*/
+     -/logs
+     -/mavsdk_tests
+     -/unit-*
+     -/uORB/
+     -DartConfiguration.tcl
+     -msg/tmp/
+     -msg/topics_sources/
+     -platforms/posix/apps.cpp
+     -platforms/posix/apps.h
+     -src/lib/version/build_git_version.h
+     -src/modules/simulator/simulator_config.h
+     -src/systemcmds/topic_listener/listener_generated.cpp
+     -
+     -!src/drivers/distance_sensor/broadcom/afbrs50/Lib/*
+     -
+     -# colcon
+     -log/
+     -keys/
+     -
+     -# metadata
+     -_emscripten_sdk/
+++++++build*/
+diff --cc CMakeLists.txt
+index 0000000000,0000000000,0000000000,0000000000,0000000000,7f4ff17ac4..6cb01964c6
+mode 000000,000000,000000,000000,000000,100644..100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,497 +1,17 @@@@@@@
+     -############################################################################
+     -#
+     -# Copyright (c) 2017 - 2024 PX4 Development Team. All rights reserved.
+     -#
+     -# Redistribution and use in source and binary forms, with or without
+     -# modification, are permitted provided that the following conditions
+     -# are met:
+     -#
+     -# 1. Redistributions of source code must retain the above copyright
+     -#    notice, this list of conditions and the following disclaimer.
+     -# 2. Redistributions in binary form must reproduce the above copyright
+     -#    notice, this list of conditions and the following disclaimer in
+     -#    the documentation and/or other materials provided with the
+     -#    distribution.
+     -# 3. Neither the name PX4 nor the names of its contributors may be
+     -#    used to endorse or promote products derived from this software
+     -#    without specific prior written permission.
+     -#
+     -# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+     -# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+     -# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+     -# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+     -# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+     -# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+     -# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+     -# OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+     -# AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+     -# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+     -# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+     -# POSSIBILITY OF SUCH DAMAGE.
+     -#
+     -############################################################################
+++++++cmake_minimum_required(VERSION 2.8)
++++++ 
+     -#=============================================================================
+     -# CMAKE CODING STANDARD FOR PX4
+     -#
+     -# Structure
+     -# ---------------------------------------------------------------------------
+     -#
+     -# * Common functions should be included in px_base.cmake.
+     -#
+     -# * OS/ board specific fucntions should be include in
+     -#	px_impl_${PX4_PLATFORM}.cmake
+     -#
+     -# Formatting
+     -# ---------------------------------------------------------------------------
+     -#
+     -# * Use hard indents to match the px4 source code.
+     -#
+     -# * All function and script arguments are upper case.
+     -#
+     -# * All local variables are lower case.
+     -#
+     -# * All cmake functions are lowercase.
+     -#
+     -# * For else, endif, endfunction, etc, never put the name of the statement
+     -#
+     -# Functions/Macros
+     -# ---------------------------------------------------------------------------
+     -#
+     -# * Use px4_parse_function_args to parse functions and check for required
+     -#   arguments. Unless there is only one argument in the function and it is clear.
+     -#
+     -# * Never use macros. They allow overwriting global variables and this
+     -#	makes variable declarations hard to locate.
+     -#
+     -# * If a target from add_custom_* is set in a function, explicitly pass it
+     -#	as an output argument so that the target name is clear to the user.
+     -#
+     -# * Avoid use of global variables in functions. Functions in a nested
+     -#	scope may use global variables, but this makes it difficult to
+     -#	reuse functions.
+     -#
+     -# Included CMake Files
+     -# ---------------------------------------------------------------------------
+     -#
+     -# * All variables in config files must have the prefix "config_".
+     -#
+     -# * Never set global variables in an included cmake file,
+     -#	you may only define functions. This excludes config and Toolchain files.
+     -#	This makes it clear to the user when variables are being set or targets
+     -#	are being created.
+     -#
+     -# * Setting a global variable in a CMakeLists.txt file is ok, because
+     -#	each CMakeLists.txt file has scope in the current directory and all
+     -#	subdirectories, so it is not truly global.
+     -#
+     -# * All toolchain files should be included in the cmake
+     -#	directory and named Toolchain-"name".cmake.
+     -#
+     -# Misc
+     -# ---------------------------------------------------------------------------
+     -#
+     -# * If referencing a string variable, don't put it in quotes.
+     -#	Don't do "${PX4_PLATFORM}" STREQUAL "posix",
+     -#	instead type ${PX4_PLATFORM} STREQUAL "posix". This will throw an
+     -#	error when ${PX4_PLATFORM} is not defined instead of silently
+     -#	evaluating to false.
+     -#
+     -#=============================================================================
+++++++project(matrix CXX)
++++++ 
+     -cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+     -
+     -set(PX4_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE FILEPATH "PX4 source directory" FORCE)
+     -set(PX4_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}" CACHE FILEPATH "PX4 binary directory" FORCE)
+     -
+     -list(APPEND CMAKE_MODULE_PATH ${PX4_SOURCE_DIR}/cmake)
+     -include(px4_parse_function_args)
+     -
+     -#=============================================================================
+     -# git
+     -#
+     -include(px4_git)
+     -
+     -execute_process(
+     -	COMMAND git describe --exclude ext/* --tags --match "v[0-9]*"
+     -	OUTPUT_VARIABLE PX4_GIT_TAG
+     -	OUTPUT_STRIP_TRAILING_WHITESPACE
+     -	RESULTS_VARIABLE GIT_DESCRIBE_RESULT
+     -	WORKING_DIRECTORY ${PX4_SOURCE_DIR}
+     -	)
+     -
+     -# if proper git tag unavilable default to v0.0.0
+     -if(NOT ${GIT_DESCRIBE_RESULT} MATCHES "0")
+     -	set(PX4_GIT_TAG "v0.0.0")
+     -endif()
+     -
+     -message(STATUS "PX4_GIT_TAG: ${PX4_GIT_TAG}")
+     -
+     -# git describe to X.Y.Z version
+     -string(REPLACE "." ";" VERSION_LIST ${PX4_GIT_TAG})
+     -
+     -# major version
+     -list(GET VERSION_LIST 0 PX4_VERSION_MAJOR)
+     -string(REPLACE "v" "" PX4_VERSION_MAJOR ${PX4_VERSION_MAJOR})
+     -# minor version
+     -list(GET VERSION_LIST 1 PX4_VERSION_MINOR)
+     -# patch version
+     -list(GET VERSION_LIST 2 PX4_VERSION_PATCH)
+     -string(REPLACE "-" ";" PX4_VERSION_PATCH ${PX4_VERSION_PATCH})
+     -list(GET PX4_VERSION_PATCH 0 PX4_VERSION_PATCH)
+     -
+     -# # Capture only the hash part after 'g'
+     -string(REGEX MATCH "g([a-f0-9]+)$" GIT_HASH "${PX4_GIT_TAG}")
+     -set(PX4_GIT_HASH ${CMAKE_MATCH_1})
+     -
+     -define_property(GLOBAL PROPERTY PX4_MODULE_LIBRARIES
+     -                 BRIEF_DOCS "PX4 module libs"
+     -                 FULL_DOCS "List of all PX4 module libraries"
+     -                 )
+     -
+     -define_property(GLOBAL PROPERTY PX4_KERNEL_MODULE_LIBRARIES
+     -                 BRIEF_DOCS "PX4 kernel side module libs"
+     -                 FULL_DOCS "List of all PX4 kernel module libraries"
+     -                 )
+     -
+     -define_property(GLOBAL PROPERTY PX4_MODULE_PATHS
+     -                 BRIEF_DOCS "PX4 module paths"
+     -                 FULL_DOCS "List of paths to all PX4 modules"
+     -                 )
+     -
+     -define_property(GLOBAL PROPERTY PX4_SRC_FILES
+     -                 BRIEF_DOCS "src files from all PX4 modules & libs"
+     -                 FULL_DOCS "SRC files from px4_add_{module,library}"
+     -                 )
+     -
+     -#=============================================================================
+     -# configuration
+     -#
+     -
+     -include(px4_add_module)
+     -set(config_module_list)
+     -set(config_kernel_list)
+     -
+     -# Find Python
+     -find_package(PythonInterp 3)
+     -# We have a custom error message to tell users how to install python3.
+     -if(NOT PYTHONINTERP_FOUND)
+     -	message(FATAL_ERROR "Python 3 not found. Please install Python 3:\n"
+     -		"    Ubuntu: sudo apt install python3 python3-dev python3-pip\n"
+     -		"    macOS: brew install python")
+     -endif()
+     -
+     -option(PYTHON_COVERAGE "Python code coverage" OFF)
+     -if(PYTHON_COVERAGE)
+     -	message(STATUS "python coverage enabled")
+     -	set(PYTHON_EXECUTABLE coverage run -p)
+     -endif()
+     -
+     -include(px4_config)
+     -include(kconfig)
+     -message(STATUS "PX4 config: ${PX4_CONFIG}")
+     -message(STATUS "PX4 platform: ${PX4_PLATFORM}")
+     -
+     -if($ENV{CLION_IDE})
+     -	# CLion automatically executes some compiler commands after configuring the
+     -	# project. This would fail on NuttX, as visibility.h tries to (indirectly)
+     -	# include nuttx/config.h, which at that point does not exist yet
+     -	add_definitions(-DPX4_DISABLE_GCC_POISON)
+     -endif()
+     -
+     -if(${PX4_PLATFORM} STREQUAL "posix")
+     -	if(ENABLE_LOCKSTEP_SCHEDULER)
+     -		add_definitions(-DENABLE_LOCKSTEP_SCHEDULER)
+     -		message(STATUS "PX4 lockstep: enabled")
+     -	else()
+     -		message(STATUS "PX4 lockstep: disabled")
+     -	endif()
+     -endif()
+     -
+     -# external modules
+     -set(EXTERNAL_MODULES_LOCATION "" CACHE STRING "External modules source location")
+     -
+     -if(NOT EXTERNAL_MODULES_LOCATION STREQUAL "")
+     -	get_filename_component(EXTERNAL_MODULES_LOCATION "${EXTERNAL_MODULES_LOCATION}" ABSOLUTE)
+     -endif()
+     -
+     -set_property(GLOBAL PROPERTY PX4_MODULE_CONFIG_FILES)
+     -
+     -include(platforms/${PX4_PLATFORM}/cmake/px4_impl_os.cmake)
+     -list(APPEND CMAKE_MODULE_PATH ${PX4_SOURCE_DIR}/platforms/${PX4_PLATFORM}/cmake)
+     -
+     -if(EXISTS "${PX4_SOURCE_DIR}/platforms/${PX4_PLATFORM}/cmake/init.cmake")
+     -	include(init)
+     -endif()
+     -
+     -#=============================================================================
+     -# project definition
+     -#
+     -project(px4 CXX C ASM)
+     -
+     -# CMake build type (Debug Release RelWithDebInfo MinSizeRel Coverage)
+     -if(NOT CMAKE_BUILD_TYPE)
+     -	if(${PX4_PLATFORM} STREQUAL "nuttx")
+     -		set(PX4_BUILD_TYPE "MinSizeRel")
+     -	else()
+     -		set(PX4_BUILD_TYPE "RelWithDebInfo")
+     -	endif()
+     -
+     -	set(CMAKE_BUILD_TYPE ${PX4_BUILD_TYPE} CACHE STRING "Build type" FORCE)
+     -endif()
+     -
+     -if((CMAKE_BUILD_TYPE STREQUAL "Debug") OR (CMAKE_BUILD_TYPE STREQUAL "Coverage"))
+     -	set(MAX_CUSTOM_OPT_LEVEL -O0)
+     -elseif(CMAKE_BUILD_TYPE MATCHES "Sanitizer")
+     -	set(MAX_CUSTOM_OPT_LEVEL -O1)
+     -elseif(CMAKE_BUILD_TYPE MATCHES "Release")
+     -	set(MAX_CUSTOM_OPT_LEVEL -O3)
+     -else()
+     -	if(px4_constrained_flash_build)
+     -		set(MAX_CUSTOM_OPT_LEVEL -Os)
+     -	else()
+     -		set(MAX_CUSTOM_OPT_LEVEL -O2)
+     -	endif()
+     -endif()
+     -
+     -set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;RelWithDebInfo;MinSizeRel;Coverage;AddressSanitizer;UndefinedBehaviorSanitizer")
+     -message(STATUS "cmake build type: ${CMAKE_BUILD_TYPE}")
+     -
+     -# Check if LTO option and check if toolchain supports it
+     -if(LTO)
+     -    include(CheckIPOSupported)
+     -    check_ipo_supported()
+     -    message(AUTHOR_WARNING "LTO enabled: LTO is highly experimental and should not be used in production")
+     -    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+     -endif()
+     -
+     -set(package-contact "px4users@googlegroups.com")
+     -
+     -set(CMAKE_CXX_STANDARD 17)
+     -set(CMAKE_CXX_STANDARD_REQUIRED ON)
+     -set(CMAKE_C_STANDARD 11)
+     -set(CMAKE_C_STANDARD_REQUIRED ON)
+     -set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+     -
+     -set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PX4_BINARY_DIR})
+     -set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PX4_BINARY_DIR})
+     -set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PX4_BINARY_DIR})
+     -
+     -#=============================================================================
+     -
+     -# gold linker - use if available (posix only for now)
+     -if(${PX4_PLATFORM} STREQUAL "posix")
+     -	include(CMakeDependentOption)
+     -	CMAKE_DEPENDENT_OPTION(USE_LD_GOLD
+     -			"Use GNU gold linker" ON
+     -			"NOT WIN32;NOT APPLE" OFF
+++++++list(APPEND CMAKE_CXX_FLAGS
+++++++	-Wall
+++++++	-Weffc++
+++++++	-Wfatal-errors
++++++ 	)
++++++ 
+     -	if(USE_LD_GOLD)
+     -		execute_process(COMMAND ${CMAKE_C_COMPILER} -fuse-ld=gold -Wl,--version ERROR_QUIET OUTPUT_VARIABLE LD_VERSION)
+     -		if("${LD_VERSION}" MATCHES "GNU gold")
+     -			set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=gold")
+     -			set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=gold")
+     -		else()
+     -			set(USE_LD_GOLD OFF)
+     -		endif()
+     -	endif()
+     -endif()
+     -
+     -#=============================================================================
+     -
+     -# Setup install paths
+     -if(${PX4_PLATFORM} STREQUAL "posix")
+     -	# This makes it possible to dynamically load code which depends on symbols
+     -	# inside the px4 executable.
+     -	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+     -	set(CMAKE_ENABLE_EXPORTS ON)
+     -
+     -	if(CMAKE_BUILD_TYPE MATCHES "Coverage")
+     -		include(coverage)
+     -	endif()
+     -
+     -	include(sanitizers)
+     -
+     -	# Define GNU standard installation directories
+     -	include(GNUInstallDirs)
+     -
+     -	if (NOT CMAKE_INSTALL_PREFIX)
+     -		set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "Install path prefix" FORCE)
+     -	endif()
+     -endif()
+     -
+     -include(ccache)
+     -
+     -#=============================================================================
+     -# get chip and chip manufacturer
+     -#
+     -px4_os_determine_build_chip()
+     -if(NOT PX4_CHIP_MANUFACTURER)
+     -	message(FATAL_ERROR "px4_os_determine_build_chip() needs to set PX4_CHIP_MANUFACTURER")
+     -endif()
+     -if(NOT PX4_CHIP)
+     -	message(FATAL_ERROR "px4_os_determine_build_chip() needs to set PX4_CHIP")
+     -endif()
+     -
+     -#=============================================================================
+     -# Testing - Automatic unit and integration testing with CTest
+     -# (Needs to be before setting the common compile flags)
+     -#
+     -
+     -# optionally enable cmake testing (supported only on posix)
+     -option(CMAKE_TESTING "Configure test targets" OFF)
+     -if(${PX4_CONFIG} STREQUAL "px4_sitl_test")
+     -	set(CMAKE_TESTING ON)
+     -endif()
+     -if(CMAKE_TESTING)
+     -	include(CTest) # sets BUILD_TESTING variable
+     -endif()
+     -
+     -# enable test filtering to run only specific tests with the ctest -R regex functionality
+     -set(TESTFILTER "" CACHE STRING "Filter string for ctest to selectively only run specific tests (ctest -R)")
+     -
+     -include(px4_add_gtest)
+     -if(BUILD_TESTING)
+     -	# Setting FUZZTEST_FUZZING_MODE=on enables ASAN, and is only supported with Clang
+     -	if (("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") OR ("${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang"))
+     -		set(FUZZTEST_FUZZING_MODE ON)
+     -	endif()
+     -	add_subdirectory(test)
+     -	fuzztest_setup_fuzzing_flags()
+     -endif()
+     -
+     -#=============================================================================
+     -# build flags
+     -#
+     -include(px4_add_common_flags)
+     -px4_add_common_flags()
+     -px4_os_add_flags()
+     -
+     -#=============================================================================
+     -# board cmake init (optional)
+     -#
+     -if(EXISTS ${PX4_BOARD_DIR}/cmake/init.cmake)
+     -	include(${PX4_BOARD_DIR}/cmake/init.cmake)
+     -endif()
+     -
+     -#=============================================================================
+     -# message, and airframe generation
+     -#
+     -include(px4_metadata)
+     -
+     -add_subdirectory(msg EXCLUDE_FROM_ALL)
+     -
+     -px4_generate_airframes_xml(BOARD ${PX4_BOARD})
+     -
+     -#=============================================================================
+     -# external projects
+     -#
+     -set(ep_base ${PX4_BINARY_DIR}/external)
+     -set_property(DIRECTORY PROPERTY EP_BASE ${ep_base})
+     -
+     -# add external project install folders to build
+     -# add the directories so cmake won't warn
+     -execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${ep_base})
+     -execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${ep_base}/Install)
+     -execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${ep_base}/Install/lib)
+     -link_directories(${ep_base}/Install/lib)
+     -execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${ep_base}/Install/include)
+     -include_directories(${ep_base}/Install/include)
+     -
+     -#=============================================================================
+     -# external modules
+     -#
+     -set(external_module_paths)
+     -if (NOT EXTERNAL_MODULES_LOCATION STREQUAL "")
+     -	message(STATUS "External modules: ${EXTERNAL_MODULES_LOCATION}")
+     -	add_subdirectory("${EXTERNAL_MODULES_LOCATION}/src" external_modules)
+     -
+     -	foreach(external_module ${config_module_list_external})
+     -		add_subdirectory(${EXTERNAL_MODULES_LOCATION}/src/${external_module} external_modules/${external_module})
+     -		list(APPEND external_module_paths ${EXTERNAL_MODULES_LOCATION}/src/${external_module})
+     -	endforeach()
+     -endif()
+     -
+     -#=============================================================================
+     -# subdirectories
+     -#
+     -add_library(parameters_interface INTERFACE)
+     -add_library(kernel_parameters_interface INTERFACE)
+     -add_library(events_interface INTERFACE)
+     -add_library(kernel_events_interface INTERFACE)
+     -
+     -include(px4_add_library)
+     -add_subdirectory(src/lib EXCLUDE_FROM_ALL)
+     -
+     -add_subdirectory(platforms/${PX4_PLATFORM}/src/px4)
+     -add_subdirectory(platforms EXCLUDE_FROM_ALL)
+     -
+     -if(EXISTS "${PX4_BOARD_DIR}/CMakeLists.txt")
+     -	add_subdirectory(${PX4_BOARD_DIR})
+     -endif()
+     -
+     -foreach(module ${config_module_list})
+     -	add_subdirectory(src/${module})
+     -endforeach()
+     -
+     -# add events lib after modules and libs as it needs to know all source files (PX4_SRC_FILES)
+     -add_subdirectory(src/lib/events EXCLUDE_FROM_ALL)
+     -# metadata needs PX4_MODULE_CONFIG_FILES
+     -add_subdirectory(src/lib/metadata EXCLUDE_FROM_ALL)
+     -
+     -# must be the last module before firmware
+     -add_subdirectory(src/lib/parameters EXCLUDE_FROM_ALL)
+     -
+     -if(${PX4_PLATFORM} STREQUAL "nuttx" AND NOT CONFIG_BUILD_FLAT)
+     -	target_link_libraries(parameters_interface INTERFACE usr_parameters)
+     -	target_link_libraries(kernel_parameters_interface INTERFACE parameters)
+     -	target_link_libraries(events_interface INTERFACE usr_events)
+     -	target_link_libraries(kernel_events_interface INTERFACE events)
+     -else()
+     -	target_link_libraries(parameters_interface INTERFACE parameters)
+     -	target_link_libraries(events_interface INTERFACE events)
+     -endif()
+     -
+     -# firmware added last to generate the builtin for included modules
+     -add_subdirectory(platforms/${PX4_PLATFORM})
+     -
+     -#=============================================================================
+     -# uORB graph generation: add a custom target 'uorb_graph'
+     -#
+     -set(uorb_graph_config ${PX4_BOARD})
+     -
+     -set(graph_module_list "")
+     -foreach(module ${config_module_list})
+     -	set(graph_module_list "${graph_module_list}" "--src-path" "src/${module}")
+     -endforeach()
+     -
+     -add_custom_command(OUTPUT ${uorb_graph_config}
+     -	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/uorb_graph/create.py
+     -		${graph_module_list} --src-path src/lib
+     -		--merge-depends
+     -		--exclude-path src/examples
+     -		--exclude-path src/lib/parameters # FIXME: enable & fix
+     -		--file ${PX4_SOURCE_DIR}/Tools/uorb_graph/graph_${uorb_graph_config}
+     -	WORKING_DIRECTORY ${PX4_SOURCE_DIR}
+     -	COMMENT "Generating uORB graph"
+     -)
+     -add_custom_target(uorb_graph DEPENDS ${uorb_graph_config})
+     -
+     -
+     -include(bloaty)
+     -
+++++++string(REPLACE ";" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
++++++ 
+     -include(metadata)
+     -include(package)
+++++++enable_testing()
++++++ 
+     -# install python requirements using configured python
+     -add_custom_target(install_python_requirements
+     -	COMMAND ${PYTHON_EXECUTABLE} -m pip install --break-system-packages --requirement ${PX4_SOURCE_DIR}/Tools/setup/requirements.txt
+     -	DEPENDS ${PX4_SOURCE_DIR}/Tools/setup/requirements.txt
+     -	USES_TERMINAL
+     -)
+++++++include_directories(matrix)
++++++ 
+     -if(EXISTS "${PX4_SOURCE_DIR}/platforms/${PX4_PLATFORM}/cmake/finalize.cmake")
+     -	include(finalize)
+     -endif()
+++++++add_subdirectory(test)
+diff --cc LICENSE
+index ec8290fc37,41d1234c01,0000000000,0000000000,0000000000,57c2b07f68..1d5f729548
+mode 100644,100644,000000,000000,000000,100644..100644
+--- a/LICENSE
++++ b/LICENSE
+@@@@@@@ -1,28 -1,20 -1,0 -1,0 -1,0 -1,29 +1,28 @@@@@@@
+-     Copyright (c) 2015, Lorenz Meier
+ -    The MIT License (MIT)
+     -BSD 3-Clause License
+     -
+     -Copyright (c) 2012 - 2025, PX4 Development Team
+++++++Copyright (c) 2015, James Goppert
+ ++++ All rights reserved.
+  +++ 
+ -    Copyright (c) 2014 Pavel Kirienko
+ ++++ Redistribution and use in source and binary forms, with or without
+ ++++ modification, are permitted provided that the following conditions are met:
+  +++ 
+ -    Permission is hereby granted, free of charge, to any person obtaining a copy of
+ -    this software and associated documentation files (the "Software"), to deal in
+ -    the Software without restriction, including without limitation the rights to
+ -    use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ -    the Software, and to permit persons to whom the Software is furnished to do so,
+ -    subject to the following conditions:
+ ++++ * Redistributions of source code must retain the above copyright notice, this
+ ++++   list of conditions and the following disclaimer.
+  +++ 
+ -    The above copyright notice and this permission notice shall be included in all
+ -    copies or substantial portions of the Software.
+ ++++ * Redistributions in binary form must reproduce the above copyright notice,
+ ++++   this list of conditions and the following disclaimer in the documentation
+ ++++   and/or other materials provided with the distribution.
+ ++++ 
+-     * Neither the name of libgnc nor the names of its
+     -* Neither the name of the copyright holder nor the names of its
+++++++* Neither the name of ocr nor the names of its
+ ++++   contributors may be used to endorse or promote products derived from
+ ++++   this software without specific prior written permission.
+ ++++ 
+ ++++ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ ++++ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ ++++ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ ++++ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ ++++ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ ++++ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ ++++ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ ++++ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ ++++ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ ++++ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  ++++
+ -    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ -    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ -    FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ -    COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ -    IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ -    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+diff --cc matrix/Dcm.hpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..8222e356d2
+new file mode 100644
+--- /dev/null
++++ b/matrix/Dcm.hpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,64 @@@@@@@
+++++++/**
+++++++ * @file Dcm.hpp
+++++++ *
+++++++ * A direction cosine matrix class.
+++++++ *
+++++++ * @author James Goppert <james.goppert@gmail.com>
+++++++ */
+++++++
+++++++#pragma once
+++++++
+++++++#include <Matrix.hpp>
+++++++#include <Quaternion.hpp>
+++++++#include <Euler.hpp>
+++++++
+++++++namespace matrix
+++++++{
+++++++
+++++++template<typename Type>
+++++++class Quaternion;
+++++++
+++++++template<typename Type>
+++++++class Dcm : public Matrix<Type, 3, 3>
+++++++{
+++++++public:
+++++++	virtual ~Dcm() {};
+++++++
+++++++	typedef Matrix<Type, 3, 1> Vector3;
+++++++
+++++++	Dcm() : Matrix<Type, 3, 3>()
+++++++	{
+++++++	}
+++++++
+++++++	Dcm(const Quaternion<Type> & q) {
+++++++		// TODO
+++++++		Dcm &c = *this;
+++++++		c(0, 0) = 0;
+++++++		c(0, 1) = 0;
+++++++		c(0, 2) = 0;
+++++++		c(1, 0) = 0;
+++++++		c(1, 1) = 0;
+++++++		c(1, 2) = 0;
+++++++		c(2, 0) = 0;
+++++++		c(2, 1) = 0;
+++++++		c(2, 2) = 0;
+++++++	}
+++++++
+++++++	Dcm(const Euler<Type> & e) {
+++++++		// TODO
+++++++		Dcm &c = *this;
+++++++		c(0, 0) = 0;
+++++++		c(0, 1) = 0;
+++++++		c(0, 2) = 0;
+++++++		c(1, 0) = 0;
+++++++		c(1, 1) = 0;
+++++++		c(1, 2) = 0;
+++++++		c(2, 0) = 0;
+++++++		c(2, 1) = 0;
+++++++		c(2, 2) = 0;
+++++++	}
+++++++};
+++++++
+++++++typedef Dcm<float> Dcmf;
+++++++
+++++++}; // namespace matrix
+diff --cc matrix/Euler.hpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..d6a7178f89
+new file mode 100644
+--- /dev/null
++++ b/matrix/Euler.hpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,61 @@@@@@@
+++++++/**
+++++++ * @file Euler.hpp
+++++++ *
+++++++ * Euler angle tait-bryan body 3-2-1
+++++++ *
+++++++ * @author James Goppert <james.goppert@gmail.com>
+++++++ */
+++++++
+++++++#pragma once
+++++++#include <Vector.hpp>
+++++++#include <Dcm.hpp>
+++++++#include <Quaternion.hpp>
+++++++
+++++++namespace matrix
+++++++{
+++++++
+++++++template <typename Type>
+++++++class Dcm;
+++++++
+++++++template <typename Type>
+++++++class Quaternion;
+++++++
+++++++template<typename Type>
+++++++class Euler : public Vector<Type, 3>
+++++++{
+++++++public:
+++++++	virtual ~Euler() {};
+++++++
+++++++	Euler() : Vector<Type, 3>()
+++++++	{
+++++++	}
+++++++
+++++++	Euler(Type roll, Type pitch, Type yaw) : Vector<Type, 3>()
+++++++	{
+++++++		Euler &v(*this);
+++++++		v(0) = roll;
+++++++		v(1) = pitch;
+++++++		v(2) = yaw;
+++++++	}
+++++++
+++++++	Euler(const Dcm<Type> & dcm) {
+++++++		// TODO
+++++++		Euler &e = *this;
+++++++		e(0) = 0;
+++++++		e(1) = 0;
+++++++		e(2) = 0;
+++++++	}
+++++++
+++++++	Euler(const Quaternion<Type> & q) {
+++++++		// TODO
+++++++		Euler &e = *this;
+++++++		e(0) = 0;
+++++++		e(1) = 0;
+++++++		e(2) = 0;
+++++++	}
+++++++
+++++++};
+++++++
+++++++typedef Euler<float> Eulerf;
+++++++
+++++++}; // namespace matrix
+diff --cc matrix/Matrix.hpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..ee94b6020a
+new file mode 100644
+--- /dev/null
++++ b/matrix/Matrix.hpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,472 @@@@@@@
+++++++/**
+++++++ * @file Matrix.hpp
+++++++ *
+++++++ * A simple matrix template library.
+++++++ *
+++++++ * @author James Goppert <james.goppert@gmail.com>
+++++++ */
+++++++
+++++++#pragma once
+++++++
+++++++#include <stdio.h>
+++++++#include <stddef.h>
+++++++#include <stdlib.h>
+++++++#include <string.h>
+++++++#include <math.h>
+++++++
+++++++namespace matrix
+++++++{
+++++++
+++++++template<typename Type, size_t  M, size_t N>
+++++++class Matrix
+++++++{
+++++++
+++++++protected:
+++++++	Type _data[M][N];
+++++++	size_t _rows;
+++++++	size_t _cols;
+++++++
+++++++public:
+++++++
+++++++	virtual ~Matrix() {};
+++++++
+++++++	Matrix() :
+++++++		_data(),
+++++++		_rows(M),
+++++++		_cols(N)
+++++++	{
+++++++	}
+++++++
+++++++	Matrix(const Type *data) :
+++++++		_data(),
+++++++		_rows(M),
+++++++		_cols(N)
+++++++	{
+++++++		memcpy(_data, data, sizeof(_data));
+++++++	}
+++++++
+++++++	Matrix(const Matrix &other) :
+++++++		_data(),
+++++++		_rows(M),
+++++++		_cols(N)
+++++++	{
+++++++		memcpy(_data, other._data, sizeof(_data));
+++++++	}
+++++++
+++++++	/**
+++++++	 * Accessors/ Assignment etc.
+++++++	 */
+++++++
+++++++	Type *data()
+++++++	{
+++++++		return _data[0];
+++++++	}
+++++++
+++++++	inline size_t rows() const
+++++++	{
+++++++		return _rows;
+++++++	}
+++++++
+++++++	inline size_t cols() const
+++++++	{
+++++++		return _rows;
+++++++	}
+++++++
+++++++	inline Type operator()(size_t i, size_t j) const
+++++++	{
+++++++		return _data[i][j];
+++++++	}
+++++++
+++++++	inline Type &operator()(size_t i, size_t j)
+++++++	{
+++++++		return _data[i][j];
+++++++	}
+++++++
+++++++	/**
+++++++	 * Matrix Operations
+++++++	 */
+++++++
+++++++	// this might use a lot of programming memory
+++++++	// since it instantiates a class for every
+++++++	// required mult pair, but it provides
+++++++	// compile time size_t checking
+++++++	template<size_t P>
+++++++	Matrix<Type, M, P> operator*(const Matrix<Type, N, P> &other) const
+++++++	{
+++++++		const Matrix<Type, M, N> &self = *this;
+++++++		Matrix<Type, M, P> res;
+++++++		res.setZero();
+++++++
+++++++		for (size_t i = 0; i < M; i++) {
+++++++			for (size_t k = 0; k < P; k++) {
+++++++				for (size_t j = 0; j < N; j++) {
+++++++					res(i, k) += self(i, j) * other(j, k);
+++++++				}
+++++++			}
+++++++		}
+++++++
+++++++		return res;
+++++++	}
+++++++
+++++++	Matrix<Type, M, N> operator+(const Matrix<Type, M, N> &other) const
+++++++	{
+++++++		Matrix<Type, M, N> res;
+++++++		const Matrix<Type, M, N> &self = *this;
+++++++
+++++++		for (size_t i = 0; i < M; i++) {
+++++++			for (size_t j = 0; j < N; j++) {
+++++++				res(i , j) = self(i, j) + other(i, j);
+++++++			}
+++++++		}
+++++++
+++++++		return res;
+++++++	}
+++++++
+++++++	bool operator==(const Matrix<Type, M, N> &other) const
+++++++	{
+++++++		Matrix<Type, M, N> res;
+++++++		const Matrix<Type, M, N> &self = *this;
+++++++
+++++++		for (size_t i = 0; i < M; i++) {
+++++++			for (size_t j = 0; j < N; j++) {
+++++++				if (self(i , j) != other(i, j)) {
+++++++					return false;
+++++++				}
+++++++			}
+++++++		}
+++++++
+++++++		return true;
+++++++	}
+++++++
+++++++	operator Type();
+++++++
+++++++	Matrix<Type, M, N> operator-(const Matrix<Type, M, N> &other) const
+++++++	{
+++++++		Matrix<Type, M, N> res;
+++++++		const Matrix<Type, M, N> &self = *this;
+++++++
+++++++		for (size_t i = 0; i < M; i++) {
+++++++			for (size_t j = 0; j < N; j++) {
+++++++				res(i , j) = self(i, j) - other(i, j);
+++++++			}
+++++++		}
+++++++
+++++++		return res;
+++++++	}
+++++++
+++++++	void operator+=(const Matrix<Type, M, N> &other)
+++++++	{
+++++++		Matrix<Type, M, N> &self = *this;
+++++++		self = self + other;
+++++++	}
+++++++
+++++++	void operator-=(const Matrix<Type, M, N> &other)
+++++++	{
+++++++		Matrix<Type, M, N> &self = *this;
+++++++		self = self - other;
+++++++	}
+++++++
+++++++	void operator*=(const Matrix<Type, M, N> &other)
+++++++	{
+++++++		Matrix<Type, M, N> &self = *this;
+++++++		self = self * other;
+++++++	}
+++++++
+++++++	/**
+++++++	 * Scalar Operations
+++++++	 */
+++++++
+++++++	Matrix<Type, M, N> operator*(Type scalar) const
+++++++	{
+++++++		Matrix<Type, M, N> res;
+++++++		const Matrix<Type, M, N> &self = *this;
+++++++
+++++++		for (size_t i = 0; i < M; i++) {
+++++++			for (size_t j = 0; j < N; j++) {
+++++++				res(i , j) = self(i, j) * scalar;
+++++++			}
+++++++		}
+++++++
+++++++		return res;
+++++++	}
+++++++
+++++++	Matrix<Type, M, N> operator+(Type scalar) const
+++++++	{
+++++++		Matrix<Type, M, N> res;
+++++++		Matrix<Type, M, N> &self = *this;
+++++++
+++++++		for (size_t i = 0; i < M; i++) {
+++++++			for (size_t j = 0; j < N; j++) {
+++++++				res(i , j) = self(i, j) + scalar;
+++++++			}
+++++++		}
+++++++
+++++++		return res;
+++++++	}
+++++++
+++++++	void operator*=(Type scalar)
+++++++	{
+++++++		Matrix<Type, M, N> &self = *this;
+++++++
+++++++		for (size_t i = 0; i < M; i++) {
+++++++			for (size_t j = 0; j < N; j++) {
+++++++				self(i, j) = self(i, j) * scalar;
+++++++			}
+++++++		}
+++++++	}
+++++++
+++++++	void operator/=(Type scalar)
+++++++	{
+++++++		Matrix<Type, M, N> &self = *this;
+++++++		self = self * (1.0f / scalar);
+++++++	}
+++++++
+++++++	/**
+++++++	 * Misc. Functions
+++++++	 */
+++++++
+++++++	void print()
+++++++	{
+++++++		Matrix<Type, M, N> &self = *this;
+++++++		printf("\n");
+++++++
+++++++		for (size_t i = 0; i < M; i++) {
+++++++			printf("[");
+++++++
+++++++			for (size_t j = 0; j < N; j++) {
+++++++				printf("%10g\t", double(self(i, j)));
+++++++			}
+++++++
+++++++			printf("]\n");
+++++++		}
+++++++	}
+++++++
+++++++	Matrix<Type, N, M> transpose() const
+++++++	{
+++++++		Matrix<Type, N, M> res;
+++++++		const Matrix<Type, M, N> &self = *this;
+++++++
+++++++		for (size_t i = 0; i < M; i++) {
+++++++			for (size_t j = 0; j < N; j++) {
+++++++				res(j, i) = self(i, j);
+++++++			}
+++++++		}
+++++++
+++++++		return res;
+++++++	}
+++++++
+++++++
+++++++	// tranpose alias
+++++++	inline Matrix<Type, N, M> T() const
+++++++	{
+++++++		return transpose();
+++++++	}
+++++++
+++++++	Matrix<Type, M, M> expm(float dt, size_t n) const
+++++++	{
+++++++		Matrix<float, M, M> res;
+++++++		res.setIdentity();
+++++++		Matrix<float, M, M> A_pow = *this;
+++++++		float k_fact = 1;
+++++++		size_t k = 1;
+++++++
+++++++		while (k < n) {
+++++++			res += A_pow * (float(pow(dt, k)) / k_fact);
+++++++
+++++++			if (k == n) { break; }
+++++++
+++++++			A_pow *= A_pow;
+++++++			k_fact *= k;
+++++++			k++;
+++++++		}
+++++++
+++++++		return res;
+++++++	}
+++++++
+++++++	Matrix<Type, M, 1> diagonal() const
+++++++	{
+++++++		Matrix<Type, M, 1> res;
+++++++		// force square for now
+++++++		const Matrix<Type, M, M> &self = *this;
+++++++
+++++++		for (size_t i = 0; i < M; i++) {
+++++++			res(i) = self(i, i);
+++++++		}
+++++++
+++++++		return res;
+++++++	}
+++++++
+++++++	void setZero()
+++++++	{
+++++++		memset(_data, 0, sizeof(_data));
+++++++	}
+++++++
+++++++	void setIdentity()
+++++++	{
+++++++		setZero();
+++++++		Matrix<Type, M, N> &self = *this;
+++++++
+++++++		for (size_t i = 0; i < M and i < N; i++) {
+++++++			self(i, i) = 1;
+++++++		}
+++++++	}
+++++++
+++++++	inline void swapRows(size_t a, size_t b)
+++++++	{
+++++++		if (a == b) { return; }
+++++++
+++++++		Matrix<Type, M, N> &self = *this;
+++++++
+++++++		for (size_t j = 0; j < cols(); j++) {
+++++++			Type tmp = self(a, j);
+++++++			self(a, j) = self(b, j);
+++++++			self(b, j) = tmp;
+++++++		}
+++++++	}
+++++++
+++++++	inline void swapCols(size_t a, size_t b)
+++++++	{
+++++++		if (a == b) { return; }
+++++++
+++++++		Matrix<Type, M, N> &self = *this;
+++++++
+++++++		for (size_t i = 0; i < rows(); i++) {
+++++++			Type tmp = self(i, a);
+++++++			self(i, a) = self(i, b);
+++++++			self(i, b) = tmp;
+++++++		}
+++++++	}
+++++++
+++++++	/**
+++++++	 * inverse based on LU factorization with partial pivotting
+++++++	 */
+++++++	Matrix <Type, M, M> inverse() const
+++++++	{
+++++++		Matrix<Type, M, M> L;
+++++++		L.setIdentity();
+++++++		const Matrix<Type, M, M> &A = (*this);
+++++++		Matrix<Type, M, M> U = A;
+++++++		Matrix<Type, M, M> P;
+++++++		P.setIdentity();
+++++++
+++++++		//printf("A:\n"); A.print();
+++++++
+++++++		// for all diagonal elements
+++++++		for (size_t n = 0; n < N; n++) {
+++++++
+++++++			// if diagonal is zero, swap with row below
+++++++			if (fabsf(U(n, n)) < 1e-8f) {
+++++++				//printf("trying pivot for row %d\n",n);
+++++++				for (size_t i = 0; i < N; i++) {
+++++++					if (i == n) { continue; }
+++++++
+++++++					//printf("\ttrying row %d\n",i);
+++++++					if (fabsf(U(i, n)) > 1e-8f) {
+++++++						//printf("swapped %d\n",i);
+++++++						U.swapRows(i, n);
+++++++						P.swapRows(i, n);
+++++++					}
+++++++				}
+++++++			}
+++++++
+++++++#ifdef MATRIX_ASSERT
+++++++			//printf("A:\n"); A.print();
+++++++			//printf("U:\n"); U.print();
+++++++			//printf("P:\n"); P.print();
+++++++			//fflush(stdout);
+++++++			ASSERT(fabsf(U(n, n)) > 1e-8f);
+++++++#endif
+++++++
+++++++			// failsafe, return zero matrix
+++++++			if (fabsf(U(n, n)) < 1e-8f) {
+++++++				Matrix<Type, M, M> zero;
+++++++				zero.setZero();
+++++++				return zero;
+++++++			}
+++++++
+++++++			// for all rows below diagonal
+++++++			for (size_t i = (n + 1); i < N; i++) {
+++++++				L(i, n) = U(i, n) / U(n, n);
+++++++
+++++++				// add i-th row and n-th row
+++++++				// multiplied by: -a(i,n)/a(n,n)
+++++++				for (size_t k = n; k < N; k++) {
+++++++					U(i, k) -= L(i, n) * U(n, k);
+++++++				}
+++++++			}
+++++++		}
+++++++
+++++++		//printf("L:\n"); L.print();
+++++++		//printf("U:\n"); U.print();
+++++++
+++++++		// solve LY=P*I for Y by forward subst
+++++++		Matrix<Type, M, M> Y = P;
+++++++
+++++++		// for all columns of Y
+++++++		for (size_t c = 0; c < N; c++) {
+++++++			// for all rows of L
+++++++			for (size_t i = 0; i < N; i++) {
+++++++				// for all columns of L
+++++++				for (size_t j = 0; j < i; j++) {
+++++++					// for all existing y
+++++++					// subtract the component they
+++++++					// contribute to the solution
+++++++					Y(i, c) -= L(i, j) * Y(j, c);
+++++++				}
+++++++
+++++++				// divide by the factor
+++++++				// on current
+++++++				// term to be solved
+++++++				// Y(i,c) /= L(i,i);
+++++++				// but L(i,i) = 1.0
+++++++			}
+++++++		}
+++++++
+++++++		//printf("Y:\n"); Y.print();
+++++++
+++++++		// solve Ux=y for x by back subst
+++++++		Matrix<Type, M, M> X = Y;
+++++++
+++++++		// for all columns of X
+++++++		for (size_t c = 0; c < N; c++) {
+++++++			// for all rows of U
+++++++			for (size_t k = 0; k < N; k++) {
+++++++				// have to go in reverse order
+++++++				size_t i = N - 1 - k;
+++++++
+++++++				// for all columns of U
+++++++				for (size_t j = i + 1; j < N; j++) {
+++++++					// for all existing x
+++++++					// subtract the component they
+++++++					// contribute to the solution
+++++++					X(i, c) -= U(i, j) * X(j, c);
+++++++				}
+++++++
+++++++				// divide by the factor
+++++++				// on current
+++++++				// term to be solved
+++++++				X(i, c) /= U(i, i);
+++++++			}
+++++++		}
+++++++
+++++++		//printf("X:\n"); X.print();
+++++++		return X;
+++++++	}
+++++++
+++++++	// inverse alias
+++++++	inline Matrix<Type, N, M> I() const
+++++++	{
+++++++		return inverse();
+++++++	}
+++++++
+++++++};
+++++++
+++++++template <>
+++++++Matrix<float,1,1>::operator float()
+++++++{
+++++++	return (*this)(0,0);
+++++++}
+++++++
+++++++typedef Matrix<float, 3,3> Matrix3f;
+++++++
+++++++}; // namespace matrix
+diff --cc matrix/Quaternion.hpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..91b344cd3d
+new file mode 100644
+--- /dev/null
++++ b/matrix/Quaternion.hpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,89 @@@@@@@
+++++++/**
+++++++ * @file Matrix.hpp
+++++++ *
+++++++ * A quaternion class.
+++++++ *
+++++++ * @author James Goppert <james.goppert@gmail.com>
+++++++ */
+++++++
+++++++#pragma once
+++++++#include <Vector.hpp>
+++++++#include <Dcm.hpp>
+++++++#include <Euler.hpp>
+++++++
+++++++namespace matrix
+++++++{
+++++++
+++++++template <typename Type>
+++++++class Dcm;
+++++++
+++++++template <typename Type>
+++++++class Euler;
+++++++
+++++++template<typename Type>
+++++++class Quaternion : public Vector<Type, 4>
+++++++{
+++++++public:
+++++++	virtual ~Quaternion() {};
+++++++
+++++++	Quaternion() : Vector<Type, 4>()
+++++++	{
+++++++		// TODO
+++++++		Quaternion &q = *this;
+++++++		q(0) = 1;
+++++++		q(1) = 0;
+++++++		q(2) = 0;
+++++++		q(3) = 0;
+++++++	}
+++++++
+++++++	Quaternion(const Dcm<Type> & dcm) {
+++++++		// TODO
+++++++		Quaternion &q = *this;
+++++++		q(0) = 0;
+++++++		q(1) = 0;
+++++++		q(2) = 0;
+++++++		q(3) = 0;
+++++++	}
+++++++
+++++++	Quaternion(const Euler<Type> & e) {
+++++++		// TODO
+++++++		Quaternion &q = *this;
+++++++		q(0) = 0;
+++++++		q(1) = 0;
+++++++		q(2) = 0;
+++++++		q(3) = 0;
+++++++	}
+++++++
+++++++	Quaternion(Type a, Type b, Type c, Type d) : Vector<Type, 4>()
+++++++	{
+++++++		// TODO
+++++++		Quaternion &q = *this;
+++++++		q(0) = a;
+++++++		q(1) = b;
+++++++		q(2) = c;
+++++++		q(3) = d;
+++++++	}
+++++++
+++++++	Quaternion operator*(const Quaternion &q) const
+++++++	{
+++++++		// TODO
+++++++		const Quaternion &p = *this;
+++++++		Quaternion r;
+++++++		r(0) = 0;
+++++++		r(1) = 0;
+++++++		r(2) = 0;
+++++++		r(3) = 0;
+++++++		return r;
+++++++	}
+++++++
+++++++	Matrix<Type, 4, 1> derivative() const {
+++++++		// TODO
+++++++		Matrix<Type, 4, 1> d;
+++++++		return d;
+++++++	}
+++++++
+++++++};
+++++++
+++++++typedef Quaternion<float> Quatf;
+++++++
+++++++}; // namespace matrix
+diff --cc matrix/Vector.hpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..3f8731bfc1
+new file mode 100644
+--- /dev/null
++++ b/matrix/Vector.hpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,52 @@@@@@@
+++++++/**
+++++++ * @file Vector.hpp
+++++++ *
+++++++ * Vector class.
+++++++ *
+++++++ * @author James Goppert <james.goppert@gmail.com>
+++++++ */
+++++++
+++++++#pragma once
+++++++#include <Matrix.hpp>
+++++++
+++++++namespace matrix
+++++++{
+++++++
+++++++template<typename Type, size_t N>
+++++++class Vector : public Matrix<Type, N, 1>
+++++++{
+++++++public:
+++++++	virtual ~Vector() {};
+++++++
+++++++	Vector() : Matrix<Type, N, 1>()
+++++++	{
+++++++	}
+++++++
+++++++	inline Type operator()(size_t i) const
+++++++	{
+++++++		const Matrix<Type, N, 1> &v = *this;
+++++++		return v(i, 0);
+++++++	}
+++++++
+++++++	inline Type &operator()(size_t i)
+++++++	{
+++++++		Matrix<Type, N, 1> &v = *this;
+++++++		return v(i, 0);
+++++++	}
+++++++
+++++++	Type dot(const Vector & b) {
+++++++		Vector &a(*this);
+++++++		Type r = 0;
+++++++		for (int i = 0; i<3; i++) {
+++++++			r += a(i)*b(i);
+++++++		}
+++++++		return r;
+++++++	}
+++++++
+++++++	Type norm() {
+++++++		Vector &a(*this);
+++++++		return sqrt(a.dot(a));
+++++++	}
+++++++};
+++++++
+++++++}; // namespace matrix
+diff --cc matrix/Vector3.hpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..ff4d87208c
+new file mode 100644
+--- /dev/null
++++ b/matrix/Vector3.hpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,46 @@@@@@@
+++++++/**
+++++++ * @file Vector3.hpp
+++++++ *
+++++++ * 3D vector class.
+++++++ *
+++++++ * @author James Goppert <james.goppert@gmail.com>
+++++++ */
+++++++
+++++++#pragma once
+++++++#include <Vector.hpp>
+++++++
+++++++namespace matrix
+++++++{
+++++++
+++++++template<typename Type>
+++++++class Vector3 : public Vector<Type, 3>
+++++++{
+++++++public:
+++++++	virtual ~Vector3() {};
+++++++
+++++++	Vector3() : Vector<Type, 3>()
+++++++	{
+++++++	}
+++++++
+++++++	Vector3(Type x, Type y, Type z) : Vector<Type, 3>()
+++++++	{
+++++++		Vector3 &v(*this);
+++++++		v(0) = x;
+++++++		v(1) = y;
+++++++		v(2) = z;
+++++++	}
+++++++
+++++++	Vector3 cross(const Vector3 & b) {
+++++++		// TODO
+++++++		Vector3 &a(*this);
+++++++		Vector3 c;
+++++++		c(0) = 0;
+++++++		c(1) = 0;
+++++++		c(2) = 0;
+++++++		return c;
+++++++	}
+++++++};
+++++++
+++++++typedef Vector3<float> Vector3f;
+++++++
+++++++}; // namespace matrix
+diff --cc test/CMakeLists.txt
+index 0000000000,0000000000,0000000000,0000000000,0000000000,d3815d44d7..4c37fe51c9
+mode 000000,000000,000000,000000,000000,100644..100644
+--- a/test/CMakeLists.txt
++++ b/test/CMakeLists.txt
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,23 +1,20 @@@@@@@
+     -px4_add_git_submodule(TARGET git_fuzztest PATH "fuzztest")
+++++++set(tests
+++++++	setIdentity
+++++++	inverse
+++++++	matrixMult
+++++++	vectorAssignment
+++++++	matrixAssignment
+++++++	matrixScalarMult
+++++++	transpose
+++++++	quaternion
+++++++	dcm
+++++++	vector
+++++++	vector3
+++++++	euler
+++++++	)
++++++ 
+     -message(STATUS "Adding fuzztest")
+     -# This will also add GTest
+     -add_subdirectory(fuzztest EXCLUDE_FROM_ALL)
+     -
+     -# Ensure there's no -R without any filter expression since that trips newer ctest versions
+     -if(TESTFILTER)
+     -    set(TESTFILTERARG "-R")
+     -else()
+     -    set(TESTFILTERARG "")
+     -endif()
+     -
+     -add_custom_target(test_results
+     -        # antlr4_tests_NOT_BUILT gets added by fuzztest
+     -        COMMAND GTEST_COLOR=1 ${CMAKE_CTEST_COMMAND} --output-on-failure -T Test ${TESTFILTERARG} ${TESTFILTER} --exclude-regex "antlr4_tests_NOT_BUILT"
+     -        DEPENDS
+     -        px4
+     -        examples__dyn_hello
+     -        USES_TERMINAL
+     -        COMMENT "Running tests"
+     -        WORKING_DIRECTORY ${PX4_BINARY_DIR})
+     -set_target_properties(test_results PROPERTIES EXCLUDE_FROM_ALL TRUE)
+++++++foreach(test ${tests})
+++++++	add_executable(${test}
+++++++		${test}.cpp)
+++++++	add_test(${test} ${test})
+++++++endforeach()
+diff --cc test/dcm.cpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..aa150a3552
+new file mode 100644
+--- /dev/null
++++ b/test/dcm.cpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,13 @@@@@@@
+++++++#include "Dcm.hpp"
+++++++#include <assert.h>
+++++++#include <stdio.h>
+++++++
+++++++using namespace matrix;
+++++++
+++++++int main()
+++++++{
+++++++	Dcmf dcm;
+++++++	Quatf q = Quatf(dcm);
+++++++	Eulerf e = Eulerf(dcm);
+++++++	return 0;
+++++++}
+diff --cc test/euler.cpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..d5b3a4c30b
+new file mode 100644
+--- /dev/null
++++ b/test/euler.cpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,15 @@@@@@@
+++++++#include "Euler.hpp"
+++++++#include <assert.h>
+++++++#include <stdio.h>
+++++++
+++++++using namespace matrix;
+++++++
+++++++int main()
+++++++{
+++++++	Eulerf e;
+++++++	float dp = e.T()*e;
+++++++	Dcmf dcm = Dcmf(e);
+++++++	Quatf q = Quatf(e);
+++++++	float n = e.norm();
+++++++	return 0;
+++++++}
+diff --cc test/inverse.cpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..73f7c0b432
+new file mode 100644
+--- /dev/null
++++ b/test/inverse.cpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,30 @@@@@@@
+++++++#include "Matrix.hpp"
+++++++#include <assert.h>
+++++++#include <stdio.h>
+++++++
+++++++using namespace matrix;
+++++++
+++++++int main()
+++++++{
+++++++	float data[9] = {1, 0, 0, 0, 1, 0, 1, 0, 1};
+++++++	Matrix3f A(data);
+++++++	Matrix3f A_I = A.inverse();
+++++++	float data_check[9] = {1, 0, 0, 0, 1, 0, -1, 0, 1};
+++++++	Matrix3f A_I_check(data_check);
+++++++	(void)A_I;
+++++++	assert(A_I == A_I_check);
+++++++
+++++++	// stess test
+++++++	static const size_t n = 100;
+++++++	Matrix<float, n, n> A_large;
+++++++	A_large.setIdentity();
+++++++	Matrix<float, n, n> A_large_I;
+++++++	A_large_I.setZero();
+++++++
+++++++	for (size_t i = 0; i < 100; i++) {
+++++++		A_large_I = A_large.inverse();
+++++++		assert(A_large == A_large_I);
+++++++	}
+++++++
+++++++	return 0;
+++++++}
+diff --cc test/matrixAssignment.cpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..5a625d0cc1
+new file mode 100644
+--- /dev/null
++++ b/test/matrixAssignment.cpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,29 @@@@@@@
+++++++#include "Matrix.hpp"
+++++++#include <assert.h>
+++++++
+++++++using namespace matrix;
+++++++
+++++++int main()
+++++++{
+++++++	Matrix3f m;
+++++++	m.setZero();
+++++++	m(0, 0) = 1;
+++++++	m(0, 1) = 2;
+++++++	m(0, 2) = 3;
+++++++	m(1, 0) = 4;
+++++++	m(1, 1) = 5;
+++++++	m(1, 2) = 6;
+++++++	m(2, 0) = 7;
+++++++	m(2, 1) = 8;
+++++++	m(2, 2) = 9;
+++++++
+++++++	m.print();
+++++++
+++++++	float data[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+++++++	Matrix3f m2(data);
+++++++	m2.print();
+++++++
+++++++	assert(m == m2);
+++++++
+++++++	return 0;
+++++++}
+diff --cc test/matrixMult.cpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..7b42d947d4
+new file mode 100644
+--- /dev/null
++++ b/test/matrixMult.cpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,26 @@@@@@@
+++++++#include "Matrix.hpp"
+++++++#include <assert.h>
+++++++#include <stdio.h>
+++++++
+++++++using namespace matrix;
+++++++
+++++++int main()
+++++++{
+++++++	float data[9] = {1, 0, 0, 0, 1, 0, 1, 0, 1};
+++++++	Matrix3f A(data);
+++++++	float data_check[9] = {1, 0, 0, 0, 1, 0, -1, 0, 1};
+++++++	Matrix3f A_I(data_check);
+++++++	Matrix3f I;
+++++++	I.setIdentity();
+++++++	A.print();
+++++++	A_I.print();
+++++++	Matrix3f R = A * A_I;
+++++++	R.print();
+++++++	assert(R == I);
+++++++
+++++++	Matrix3f R2 = A;
+++++++	R2 *= A_I;
+++++++	R2.print();
+++++++	assert(R2 == I);
+++++++	return 0;
+++++++}
+diff --cc test/matrixScalarMult.cpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..78bdb5b27f
+new file mode 100644
+--- /dev/null
++++ b/test/matrixScalarMult.cpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,18 @@@@@@@
+++++++#include "Matrix.hpp"
+++++++#include <assert.h>
+++++++#include <stdio.h>
+++++++
+++++++using namespace matrix;
+++++++
+++++++int main()
+++++++{
+++++++	float data[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+++++++	Matrix3f A(data);
+++++++	A = A * 2;
+++++++	float data_check[9] = {2, 4, 6, 8, 10, 12, 14, 16, 18};
+++++++	Matrix3f A_check(data_check);
+++++++	A.print();
+++++++	A_check.print();
+++++++	assert(A == A_check);
+++++++	return 0;
+++++++}
+diff --cc test/quaternion.cpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..40c36adf58
+new file mode 100644
+--- /dev/null
++++ b/test/quaternion.cpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,15 @@@@@@@
+++++++#include "Quaternion.hpp"
+++++++#include <assert.h>
+++++++#include <stdio.h>
+++++++
+++++++using namespace matrix;
+++++++
+++++++int main()
+++++++{
+++++++	Quatf p(1, 0, 0, 0);
+++++++	Quatf q(0, 1, 0, 0);
+++++++	Quatf r = p*q;
+++++++	Dcmf dcm = Dcmf(p);
+++++++	Eulerf e = Eulerf(p);
+++++++	return 0;
+++++++}
+diff --cc test/setIdentity.cpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..f80e437939
+new file mode 100644
+--- /dev/null
++++ b/test/setIdentity.cpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,25 @@@@@@@
+++++++#include "Matrix.hpp"
+++++++#include <assert.h>
+++++++
+++++++using namespace matrix;
+++++++
+++++++int main()
+++++++{
+++++++	Matrix3f A;
+++++++	A.setIdentity();
+++++++	assert(A.rows() == 3);
+++++++	assert(A.cols() == 3);
+++++++
+++++++	for (int i = 0; i < 3; i++) {
+++++++		for (int j = 0; j < 3; j++) {
+++++++			if (i == j) {
+++++++				assert(A(i, j) == 1);
+++++++
+++++++			} else {
+++++++				assert(A(i, j) == 0);
+++++++			}
+++++++		}
+++++++	}
+++++++
+++++++	return 0;
+++++++}
+diff --cc test/transpose.cpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..3623fc1f9a
+new file mode 100644
+--- /dev/null
++++ b/test/transpose.cpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,18 @@@@@@@
+++++++#include "Matrix.hpp"
+++++++#include <assert.h>
+++++++#include <stdio.h>
+++++++
+++++++using namespace matrix;
+++++++
+++++++int main()
+++++++{
+++++++	float data[9] = {1, 2, 3, 4, 5, 6};
+++++++	Matrix<float, 2, 3> A(data);
+++++++	Matrix<float, 3, 2> A_T = A.transpose();
+++++++	float data_check[9] = {1, 4, 2, 5, 3, 6};
+++++++	Matrix<float, 3, 2> A_T_check(data_check);
+++++++	A_T.print();
+++++++	A_T_check.print();
+++++++	assert(A_T == A_T_check);
+++++++	return 0;
+++++++}
+diff --cc test/vector.cpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..3da9f8a01a
+new file mode 100644
+--- /dev/null
++++ b/test/vector.cpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,13 @@@@@@@
+++++++#include "Vector.hpp"
+++++++#include <assert.h>
+++++++#include <stdio.h>
+++++++
+++++++using namespace matrix;
+++++++
+++++++int main()
+++++++{
+++++++	Vector<float, 5> v;
+++++++	float n = v.norm();
+++++++	float r = v.dot(v);
+++++++	return 0;
+++++++}
+diff --cc test/vector3.cpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..f79186504e
+new file mode 100644
+--- /dev/null
++++ b/test/vector3.cpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,13 @@@@@@@
+++++++#include "Vector3.hpp"
+++++++#include <assert.h>
+++++++#include <stdio.h>
+++++++
+++++++using namespace matrix;
+++++++
+++++++int main()
+++++++{
+++++++	Vector3f a(1, 0, 0);
+++++++	Vector3f b(0, 1, 0);
+++++++	Vector3f c = a.cross(b);
+++++++	return 0;
+++++++}
+diff --cc test/vectorAssignment.cpp
+index 0000000000,0000000000,0000000000,0000000000,0000000000,0000000000..7d7c7a36a4
+new file mode 100644
+--- /dev/null
++++ b/test/vectorAssignment.cpp
+@@@@@@@ -1,0 -1,0 -1,0 -1,0 -1,0 -1,0 +1,28 @@@@@@@
+++++++#include "Vector3.hpp"
+++++++#include <assert.h>
+++++++
+++++++using namespace matrix;
+++++++
+++++++int main()
+++++++{
+++++++	Vector3f v;
+++++++	v(0) = 1;
+++++++	v(1) = 2;
+++++++	v(2) = 3;
+++++++
+++++++	v.print();
+++++++
+++++++	assert(v(0) == 1);
+++++++	assert(v(1) == 2);
+++++++	assert(v(2) == 3);
+++++++
+++++++	Vector3f v2(4, 5, 6);
+++++++
+++++++	v2.print();
+++++++
+++++++	assert(v2(0) == 4);
+++++++	assert(v2(1) == 5);
+++++++	assert(v2(2) == 6);
+++++++
+++++++	return 0;
+++++++}

@@ -1,0 +1,17 @@
+
+0. Omnicopter
+https://docs.px4.io/main/en/frames_multicopter/omnicopter
+
+https://raw.githubusercontent.com/PX4/PX4-Autopilot/main/docs/assets/airframes/multicopter/omnicopter/omnicopter.params
+
+1. The New Dynamic Mixing System of PX4 - Beat Küng & Silvan Fuhrer, Auterion 
+https://www.youtube.com/watch?v=NQwepGLMzZ4
+
+2. Control Allocation(Mixing)
+https://docs.px4.io/main/en/concept/control_allocation
+
+3. PX4 Fundamentals Workshop - Junwoo Hwang, Dronecode Foundation 
+https://www.youtube.com/watch?v=-1MASuJDGn4
+
+4. Simulate and Deploy UAV Applications with Hardware-in-the-Loop Workflows - MathWorks 
+https://www.youtube.com/watch?v=tUwp4rInAeg&list=PLYy2pGCdhu7xPaMfExOWqxUvX4CPGbeP3&index=47
